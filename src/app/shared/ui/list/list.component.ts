@@ -1,10 +1,22 @@
-import { Component, EventEmitter, Input, OnInit, Output, TemplateRef, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { DEFAULT_SEARCH_PARAMS, SearchParams, Sort } from 'app/shared/ui/list/search.model';
-import { PrimeNGConfig, SelectItem } from 'primeng/api';
-import { DataView } from 'primeng/dataview';
-import { debounceTime } from 'rxjs/operators';
-import { ListService } from './list.service';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  TemplateRef,
+  ViewChild,
+} from "@angular/core";
+import { FormControl } from "@angular/forms";
+import {
+  DEFAULT_SEARCH_PARAMS,
+  SearchParams,
+  Sort,
+} from "app/shared/ui/list/search.model";
+import { PrimeNGConfig, SelectItem } from "primeng/api";
+import { DataView } from "primeng/dataview";
+import { debounceTime } from "rxjs/operators";
+import { ListService } from "./list.service";
 
 export interface ListHeaderOptionsBase {
   search: string;
@@ -21,12 +33,11 @@ export interface PaginationEvent {
 }
 
 @Component({
-  selector: 'app-list',
-  templateUrl: './list.component.html',
-  styleUrls: ['./list.component.scss']
+  selector: "app-list",
+  templateUrl: "./list.component.html",
+  styleUrls: ["./list.component.scss"],
 })
 export class ListComponent<T> implements OnInit {
-
   @ViewChild(DataView) dv: DataView;
 
   @Input() public readonly items: T[]; // Data
@@ -35,7 +46,7 @@ export class ListComponent<T> implements OnInit {
   @Input() public readonly listItemTemplate!: TemplateRef<unknown>;
   @Input() public readonly gridItemTemplate!: TemplateRef<unknown>;
   @Input() public readonly sortOptions: SelectItem[];
-  @Input() public readonly layout: 'grid' | 'list' = 'grid';
+  @Input() public readonly layout: "grid" | "list" = "grid";
   @Input() public readonly enableAdd: boolean; // can add item from list
   @Input() public readonly enableDateRange: boolean; // can filter by date range
   @Input() private readonly listKey!: string; // for local service storage
@@ -53,28 +64,27 @@ export class ListComponent<T> implements OnInit {
   public sortField: string;
   public sortOrder: number;
   public searchParams: SearchParams = DEFAULT_SEARCH_PARAMS;
-  public sortCtrl: FormControl = new FormControl('');
-  public searchCtrl: FormControl = new FormControl('');
+  public sortCtrl: FormControl = new FormControl("");
+  public searchCtrl: FormControl = new FormControl("");
   public dateRangeCtrl: FormControl = new FormControl([new Date(), new Date()]);
-  public selection: (T&{id})[] = [];
+  public selection: (T & { id })[] = [];
 
   private firstLoad = true;
 
   constructor(
     private readonly primengConfig: PrimeNGConfig,
     private readonly listService: ListService
-  ) {
-
-  }
+  ) {}
 
   ngOnInit(): void {
-    this.searchParams = this.listService.getSearchConfig(this.listKey, this.sortKey);
+    this.searchParams = this.listService.getSearchConfig(
+      this.listKey,
+      this.sortKey
+    );
 
     this.primengConfig.ripple = true;
 
-    this.searchCtrl.valueChanges.pipe(
-      debounceTime(300),
-    ).subscribe(term => {
+    this.searchCtrl.valueChanges.pipe(debounceTime(300)).subscribe((term) => {
       this.storeSearchParams({ search: term });
       if (this.backEndSearch) {
         this.emitFilters();
@@ -83,10 +93,8 @@ export class ListComponent<T> implements OnInit {
       }
     });
 
-    this.sortCtrl.valueChanges.pipe(
-      debounceTime(300),
-    ).subscribe(sortKey => {
-      const [order, field] = sortKey.split('-');
+    this.sortCtrl.valueChanges.pipe(debounceTime(300)).subscribe((sortKey) => {
+      const [order, field] = sortKey.split("-");
       this.storeSearchParams({ sortField: field, sortOrder: order });
       if (this.backEndSearch) {
         this.emitFilters();
@@ -96,29 +104,38 @@ export class ListComponent<T> implements OnInit {
       }
     });
 
-    this.dateRangeCtrl.valueChanges.pipe(
-      debounceTime(300),
-    ).subscribe((dates) => {
-      this.storeSearchParams({ from: new Date(dates[0]).getTime(), to: new Date(dates[1]).getTime() });
-      if (this.backEndSearch) {
-        this.emitFilters();
-      }
-    });
+    this.dateRangeCtrl.valueChanges
+      .pipe(debounceTime(300))
+      .subscribe((dates) => {
+        this.storeSearchParams({
+          from: new Date(dates[0]).getTime(),
+          to: new Date(dates[1]).getTime(),
+        });
+        if (this.backEndSearch) {
+          this.emitFilters();
+        }
+      });
 
     // Set values from search params
     const sortKey = `${this.searchParams.sortOrder}-${this.searchParams.sortField}`;
     this.sortCtrl.setValue(sortKey, { emitEvent: false });
-    this.searchCtrl.setValue(this.searchParams.search || '', { emitEvent: false });
-    const from = this.searchParams.from ? new Date(this.searchParams.from) : new Date();
-    const to = this.searchParams.to ? new Date(this.searchParams.to) : new Date();
+    this.searchCtrl.setValue(this.searchParams.search || "", {
+      emitEvent: false,
+    });
+    const from = this.searchParams.from
+      ? new Date(this.searchParams.from)
+      : new Date();
+    const to = this.searchParams.to
+      ? new Date(this.searchParams.to)
+      : new Date();
     this.dateRangeCtrl.setValue([from, to], { emitEvent: false });
   }
 
-  public selectItem({ checked }, item: T&{id}) {
+  public selectItem({ checked }, item: T & { id }) {
     if (checked) {
       this.selection.push(item);
     } else {
-      this.selection = this.selection.filter(s => s.id !== item.id);
+      this.selection = this.selection.filter((s) => s.id !== item.id);
     }
   }
 

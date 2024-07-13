@@ -1,0 +1,96 @@
+<div class="products-list-container">
+  <app-list
+    [items]="items"
+    [pagination]="true"
+    [totalRecords]="totalRecords"
+    [listItemTemplate]="listItemTemplate"
+    [gridItemTemplate]="gridItemTemplate"
+    [sortOptions]="sortOptions"
+    [layout]="layout"
+    [listKey]="'product-list'"
+    [sortKey]="sortKey"
+    [backEndSearch]="false"
+    (pageChanged)="onPageChange($event)"
+  ></app-list>
+</div>
+
+<ng-template #listItemTemplate let-product let-i="index">
+  <div class="item-list-container">
+    <div class="item-list-image">
+      <img
+        [src]="
+          'https://primefaces.org/cdn/primeng/images/demo/product/' +
+          product.image
+        "
+        [alt]="product.name"
+      />
+    </div>
+    <div class="item-list-details">
+      <div class="item-list-info-container">
+        <div class="item-list-info">
+          <div class="category">
+            <i class="pi pi-tag" style="font-size: 0.8rem"></i>
+            <small> {{ product.category }}</small>
+          </div>
+          <div class="rating">
+            <p-rating
+              [cancel]="false"
+              [stars]="5"
+              [readonly]="true"
+              [(ngModel)]="product.rating"
+            ></p-rating>
+          </div>
+        </div>
+        <div class="item-list-name">{{ product.name }}</div>
+        <div class="item-list-description">{{ product.description }}</div>
+      </div>
+      <div class="item-list-action">
+        <div class="item-list-price">{{ product.price | currency }}</div>
+        <p-button
+          icon="pi pi-shopping-cart"
+          class="flex-auto md:flex-initial white-space-nowrap"
+          [disabled]="product.inventoryStatus === 'OUTOFSTOCK'"
+        ></p-button>
+      </div>
+    </div>
+  </div>
+</ng-template>
+<ng-template #gridItemTemplate let-product let-i="index">
+  <div class="item-grid-container">
+    <div class="item-grid-image">
+      <img
+        [src]="
+          'https://primefaces.org/cdn/primeng/images/demo/product/' +
+          product.image
+        "
+        [alt]="product.name"
+      />
+    </div>
+    <div class="item-grid-details">
+      <div class="item-grid-info">
+        <div class="category">
+          <i class="pi pi-tag" style="font-size: 0.8rem"></i>
+          <small> {{ product.category }}</small>
+        </div>
+        <div class="rating">
+          <p-rating
+            [cancel]="false"
+            [stars]="5"
+            [readonly]="true"
+            [(ngModel)]="product.rating"
+          ></p-rating>
+        </div>
+      </div>
+      <div class="item-grid-name">{{ product.name }}</div>
+      <div class="item-grid-description">{{ product.description }}</div>
+      <div class="item-grid-action">
+        <div class="item-grid-price">{{ product.price | currency }}</div>
+        <p-button
+          icon="pi pi-shopping-cart"
+          class="flex-auto md:flex-initial white-space-nowrap"
+          [disabled]="product.inventoryStatus === 'OUTOFSTOCK'"
+        ></p-button>
+      </div>
+    </div>
+  </div>
+</ng-template>

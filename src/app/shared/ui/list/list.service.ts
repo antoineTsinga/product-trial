@@ -1,13 +1,15 @@
-import { Injectable } from '@angular/core';
-import { DEFAULT_SEARCH_PARAMS, SearchParams } from 'app/shared/ui/list/search.model';
+import { Injectable } from "@angular/core";
+import {
+  DEFAULT_SEARCH_PARAMS,
+  SearchParams,
+} from "app/shared/ui/list/search.model";
 
 @Injectable()
 export class ListService {
+  private searchConfig: { [listKey: string]: SearchParams } = {};
+  public loadedOnce: { [listKey: string]: boolean } = {};
 
-  private searchConfig: { [listKey: string]: SearchParams } = { };
-  public loadedOnce: { [listKey: string]: boolean } = { };
-
-  constructor() { }
+  constructor() {}
 
   public storeSearchConfig(searchConfig: SearchParams, listKey: string): void {
     this.searchConfig[listKey] = searchConfig;
