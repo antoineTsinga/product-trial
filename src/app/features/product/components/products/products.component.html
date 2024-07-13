@@ -17,13 +17,22 @@
 <ng-template #listItemTemplate let-product let-i="index">
   <div class="item-list-container">
     <div class="item-list-image">
-      <img
-        [src]="
-          'https://primefaces.org/cdn/primeng/images/demo/product/' +
-          product.image
-        "
-        [alt]="product.name"
-      />
+      <div class="item-list-image-container">
+        <img
+          [src]="
+            'https://primefaces.org/cdn/primeng/images/demo/product/' +
+            product.image
+          "
+          [alt]="product.name"
+        />
+        <p-tag
+          [value]="product.inventoryStatus"
+          [severity]="getSeverity(product)"
+          class="item-list-status"
+          [style.left.px]="4"
+          [style.top.px]="4"
+        ></p-tag>
+      </div>
     </div>
     <div class="item-list-details">
       <div class="item-list-info-container">
@@ -58,13 +67,22 @@
 <ng-template #gridItemTemplate let-product let-i="index">
   <div class="item-grid-container">
     <div class="item-grid-image">
-      <img
-        [src]="
-          'https://primefaces.org/cdn/primeng/images/demo/product/' +
-          product.image
-        "
-        [alt]="product.name"
-      />
+      <div class="item-grid-image-container">
+        <img
+          [src]="
+            'https://primefaces.org/cdn/primeng/images/demo/product/' +
+            product.image
+          "
+          [alt]="product.name"
+        />
+        <p-tag
+          [value]="product.inventoryStatus"
+          [severity]="getSeverity(product)"
+          class="item-grid-status"
+          [style.left.px]="4"
+          [style.top.px]="4"
+        ></p-tag>
+      </div>
     </div>
     <div class="item-grid-details">
       <div class="item-grid-info">
