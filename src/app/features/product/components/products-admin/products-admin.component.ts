@@ -112,7 +112,6 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
             this.totalRecords = products.total_results;
           },
           error: (error) => {
-            console.log(error);
             this.snackbarService.displayError(error.error);
           },
         });
@@ -131,7 +130,6 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
             this.totalRecords = products.total_results;
           },
           error: (error) => {
-            console.log(error);
             this.snackbarService.displayError(error.error);
           },
         });
@@ -168,7 +166,6 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
   }
 
   onLazyLoad(event: TableLazyLoadEvent): void {
-    // console.log("onLazyLoad", event);
     const { page, size, sort, filter } = this.getParams(event);
     this.searchParams = { page, size, sort, filter };
     this.loadProducts(page, size, sort, filter);
