@@ -1,10 +1,10 @@
-import { Component, LOCALE_ID, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Product, ProductImpl } from "../../product.model";
 import { CrudItemOptions } from "app/shared/utils/crud-item-options/crud-item-options.model";
 import { ControlType } from "app/shared/utils/crud-item-options/control-type.model";
 import { TableLazyLoadEvent } from "app/shared/ui/table/table-lazyload-event.model";
 import { ProductService } from "../../../product.service";
-import { Subscription, switchMap, tap } from "rxjs";
+import { Subscription, switchMap } from "rxjs";
 import { CurrencyPipe } from "@angular/common";
 import { getColumnAdmin } from "./products-admin-columns";
 import { ScreenWidthService } from "app/shared/utils/screen-width/screen-width.service";
@@ -58,19 +58,17 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
     sort: string = "name,asc",
     filter = {}
   ) {
-    this.productService
-      .getProducts({ page, size, sort, ...filter })
-      .pipe(tap(() => (this.loading = true)))
-      .subscribe({
-        next: (data) => {
-          this.products = data.results;
-          this.totalRecords = data.total_results;
-          this.loading = false;
-        },
-        error: () => {
-          this.loading = false;
-        },
-      });
+    this.loading = true;
+    this.productService.getProducts({ page, size, sort, ...filter }).subscribe({
+      next: (data) => {
+        this.products = data.results;
+        this.totalRecords = data.total_results;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   getParams(event: TableLazyLoadEvent) {
@@ -99,18 +97,23 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
       this.productService
         .createProduct(product)
         .pipe(switchMap(() => this.reloadItem()))
-        .subscribe((products) => {
-          this.products = products.results;
-          this.totalRecords = products.total_results;
+        .subscribe({
+          next: (products) => {
+            this.products = products.results;
+            this.totalRecords = products.total_results;
+          },
+          error: () => {},
         });
     } else {
-      console.log("onSave", product);
       this.productService
         .partialUpdateProduct(product.id, product)
         .pipe(switchMap(() => this.reloadItem()))
-        .subscribe((products) => {
-          this.products = products.results;
-          this.totalRecords = products.total_results;
+        .subscribe({
+          next: (products) => {
+            this.products = products.results;
+            this.totalRecords = products.total_results;
+          },
+          error: () => {},
         });
     }
   }
@@ -119,9 +122,12 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
     this.productService
       .deleteProducts(ids)
       .pipe(switchMap(() => this.reloadItem()))
-      .subscribe((products) => {
-        this.products = products.results;
-        this.totalRecords = products.total_results;
+      .subscribe({
+        next: (products) => {
+          this.products = products.results;
+          this.totalRecords = products.total_results;
+        },
+        error: () => {},
       });
   }
 

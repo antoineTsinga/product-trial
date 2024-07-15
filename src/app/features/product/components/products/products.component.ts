@@ -1,7 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { Product } from "../../product.model";
 import { ProductService } from "../../../product.service";
-import { tap } from "rxjs";
 import { SelectItem } from "primeng/api";
 import { DEFAULT_SEARCH_PARAMS } from "app/shared/ui/list/search.model";
 import { ListService } from "app/shared/ui/list/list.service";
@@ -58,19 +57,17 @@ export class ProductsComponent implements OnInit {
     sort: string = "name,asc",
     filter = {}
   ) {
-    this.productService
-      .getProducts({ page, size, sort, ...filter })
-      .pipe(tap(() => (this.loading = true)))
-      .subscribe({
-        next: (data) => {
-          this.items = data.results;
-          this.totalRecords = data.total_results;
-          this.loading = false;
-        },
-        error: () => {
-          this.loading = false;
-        },
-      });
+    this.loading = true;
+    this.productService.getProducts({ page, size, sort, ...filter }).subscribe({
+      next: (data) => {
+        this.items = data.results;
+        this.totalRecords = data.total_results;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      },
+    });
   }
 
   onPageChange(event: PaginationEvent) {
