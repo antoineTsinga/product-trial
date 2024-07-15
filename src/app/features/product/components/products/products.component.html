@@ -7,10 +7,11 @@
     [gridItemTemplate]="gridItemTemplate"
     [sortOptions]="sortOptions"
     [layout]="layout"
-    [listKey]="'product-list'"
+    [listKey]="listKey"
     [sortKey]="sortKey"
-    [backEndSearch]="false"
+    [backEndSearch]="true"
     (pageChanged)="onPageChange($event)"
+    (filtered)="onFilteredChange($event)"
   ></app-list>
 </div>
 

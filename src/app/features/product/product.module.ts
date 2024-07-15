@@ -6,6 +6,7 @@ import { TagModule } from "primeng/tag";
 import { DataViewModule } from "primeng/dataview";
 import { RatingModule } from "primeng/rating";
 import { ButtonModule } from "primeng/button";
+import { CurrencyPipe } from "@angular/common";
 
 @NgModule({
   declarations: [ProductsAdminComponent, ProductsComponent],
@@ -16,5 +17,6 @@ import { ButtonModule } from "primeng/button";
     RatingModule,
     ButtonModule,
   ],
+  providers: [CurrencyPipe],
 })
 export class ProductModule {}

@@ -1,20 +1,28 @@
-import { formatDate } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { isArray } from '@dwtechs/checkhard';
-import { CrudItemOptions } from 'app/shared/utils/crud-item-options/crud-item-options.model';
-import { TableLazyLoadEvent } from 'app/shared/ui/table/table-lazyload-event.model';
-import { LazyLoadEvent, SelectItem } from 'primeng/api';
-import { Table } from 'primeng/table';
-import { TableColumn } from './table-column.model';
-import { ControlType } from 'app/shared/utils/crud-item-options/control-type.model';
+import { formatDate } from "@angular/common";
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  ViewChild,
+} from "@angular/core";
+import { isArray } from "@dwtechs/checkhard";
+import { CrudItemOptions } from "app/shared/utils/crud-item-options/crud-item-options.model";
+import { TableLazyLoadEvent } from "app/shared/ui/table/table-lazyload-event.model";
+import { LazyLoadEvent, SelectItem } from "primeng/api";
+import { Table } from "primeng/table";
+import { TableColumn } from "./table-column.model";
+import { ControlType } from "app/shared/utils/crud-item-options/control-type.model";
 
 @Component({
-  selector: 'app-table',
-  templateUrl: './table.component.html',
-  styleUrls: ['./table.component.scss'],
+  selector: "app-table",
+  templateUrl: "./table.component.html",
+  styleUrls: ["./table.component.scss"],
 })
 export class TableComponent<T> implements OnChanges {
-  @ViewChild('dataTable') dataTable: Table;
+  @ViewChild("dataTable") dataTable: Table;
   @Input() public readonly data: T[];
   @Input() public readonly config: CrudItemOptions[];
   @Input() public readonly editableRows: boolean = true;
@@ -43,14 +51,14 @@ export class TableComponent<T> implements OnChanges {
   constructor() {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    const { currentValue: config, previousValue: prevConfig } = changes.config ?? {};
+    const { currentValue: config, previousValue: prevConfig } =
+      changes.config ?? {};
     const configChanged = JSON.stringify(config) !== JSON.stringify(prevConfig);
     if (config && configChanged) {
       this.cols = this.getColumns();
     }
     const { currentValue: data, previousValue: prevData } = changes.data ?? {};
     if (data && prevData) {
-
     }
   }
 
@@ -60,14 +68,14 @@ export class TableComponent<T> implements OnChanges {
       rows: event.rows,
       sortOrder: event.sortOrder as 1 | -1,
       sortField: event.sortField,
-      filters: event.filters
+      filters: event.filters,
       // filters: event.filters ? JSON.stringify(event.filters) : '' as any
     };
     this.lazyLoaded.emit(cleanEvent);
   }
 
   public onEdit(rowData: T): void {
-    this.editedEntry = {...rowData};
+    this.editedEntry = { ...rowData };
     this.creation = false;
     this.entryEditionDialogDisplayed = true;
   }
@@ -77,7 +85,7 @@ export class TableComponent<T> implements OnChanges {
   }
 
   public onDeleteMultiple(): void {
-    const ids = this.selectedEntries.map(entry => entry.id);
+    const ids = this.selectedEntries.map((entry) => entry.id);
     this.deleted.emit(ids);
   }
 
@@ -96,9 +104,9 @@ export class TableComponent<T> implements OnChanges {
     this.editedEntry = null;
     this.entryEditionDialogDisplayed = false;
   }
-  
-  public onDeleteEntry(id: number): void{
-    this.deleted.emit([id])
+
+  public onDeleteEntry(id: number): void {
+    this.deleted.emit([id]);
     this.entryEditionDialogDisplayed = false;
   }
 
@@ -110,29 +118,38 @@ export class TableComponent<T> implements OnChanges {
     this.selectedEntries = [];
   }
 
-  public export():void{
+  public export(): void {
     this.exportDialogDisplay = true;
   }
 
   private getColumns(): TableColumn[] {
-    return this.config.map(item => {
-      const renderedValue = (cellValue: unknown, isTooltip = false) => this.getRenderer(cellValue, item, isTooltip);
+    const columns = this.config.map((item) => {
+      const renderedValue = (cellValue: unknown, isTooltip = false) =>
+        this.getRenderer(cellValue, item, isTooltip);
       const columnOptions = item.columnOptions;
       return {
         ...item,
         ...columnOptions,
         key: item.key.toString(),
-        isList: item.controlType === 'table',
+        isList: item.controlType === "table",
         isVisible: columnOptions.default,
         renderer: (cellValue: unknown) => renderedValue(cellValue),
-        tooltip: cellValue => columnOptions.tooltip ? columnOptions.tooltip(cellValue) : renderedValue(cellValue, true),
+        tooltip: (cellValue) =>
+          columnOptions.tooltip
+            ? columnOptions.tooltip(cellValue)
+            : renderedValue(cellValue, true),
         filterable: columnOptions.filterable !== false,
         sortable: columnOptions.sortable !== false,
-      }
+      };
     });
+    return columns;
   }
 
-  private getRenderer(cellValue: unknown, control: CrudItemOptions, isTooltip: boolean): string {
+  private getRenderer(
+    cellValue: unknown,
+    control: CrudItemOptions,
+    isTooltip: boolean
+  ): string {
     if (control.columnOptions.customCellRenderer) {
       return control.columnOptions.customCellRenderer(cellValue);
     }
@@ -140,14 +157,14 @@ export class TableComponent<T> implements OnChanges {
       case ControlType.TABLE: {
         return this.tableCellRenderer(cellValue);
       }
-      case ControlType.SELECT: {        
+      case ControlType.SELECT: {
         return this.selectCellRenderer(cellValue, control);
       }
       case ControlType.MULTISELECT: {
         return this.multiselectCellRenderer(cellValue, control, isTooltip);
       }
       case ControlType.DATE: {
-        return formatDate(cellValue as number, 'yyyy-MM-dd', 'en');
+        return formatDate(cellValue as number, "yyyy-MM-dd", "en");
       }
       case ControlType.CHECKBOX: {
         return this.checkboxCellRenderer(cellValue, isTooltip);
@@ -159,34 +176,47 @@ export class TableComponent<T> implements OnChanges {
   }
 
   private tableCellRenderer(cellValue: unknown): string {
-    return this.isCellArray(cellValue) ? cellValue.length.toString() : '';
+    return this.isCellArray(cellValue) ? cellValue.length.toString() : "";
   }
-  
-  private selectCellRenderer(cellValue: unknown, column: CrudItemOptions): string {
+
+  private selectCellRenderer(
+    cellValue: unknown,
+    column: CrudItemOptions
+  ): string {
     const option = this.getOption(column, cellValue);
-    if (!option) return '';
+    if (!option) return "";
     return option.label;
   }
 
-  private multiselectCellRenderer(cellValue: unknown, column: CrudItemOptions, tooltip: boolean): string {
+  private multiselectCellRenderer(
+    cellValue: unknown,
+    column: CrudItemOptions,
+    tooltip: boolean
+  ): string {
     if (this.isCellArray(cellValue)) {
-      const separator = tooltip ? ', ': '';
-      let values = cellValue.map(val => this.getOption(column, val)).filter(val => !!val);
-      return values.map(val => {
-        if (val.styleClass && !tooltip) {
-          return `<i class="${val.styleClass}">${val.label}</i>`;
-        }
-        return val.label;
-      }).join(separator);
+      const separator = tooltip ? ", " : "";
+      let values = cellValue
+        .map((val) => this.getOption(column, val))
+        .filter((val) => !!val);
+      return values
+        .map((val) => {
+          if (val.styleClass && !tooltip) {
+            return `<i class="${val.styleClass}">${val.label}</i>`;
+          }
+          return val.label;
+        })
+        .join(separator);
     }
-    return '';
+    return "";
   }
 
   private checkboxCellRenderer(cellValue: unknown, tooltip: boolean): string {
     if (tooltip) {
-      return cellValue ? 'Yes' : 'No';
+      return cellValue ? "Yes" : "No";
     }
-    return cellValue ? '<i class="pi pi-check green"></i>' : '<i class="pi pi-times indigo"></i>';
+    return cellValue
+      ? '<i class="pi pi-check green"></i>'
+      : '<i class="pi pi-times indigo"></i>';
   }
 
   private isCellArray(cellValue: unknown): cellValue is unknown[] {
@@ -194,7 +224,6 @@ export class TableComponent<T> implements OnChanges {
   }
 
   private getOption(column: CrudItemOptions, cellValue: unknown): SelectItem {
-    return column.options.find(opt => opt.value === cellValue)
+    return column.options.find((opt) => opt.value === cellValue);
   }
-
 }

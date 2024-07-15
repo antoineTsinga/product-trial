@@ -196,7 +196,10 @@ app-navbar {
       }
     }
   }
-
+  .app-route {
+    margin-left: 60px;
+    margin-top: 50px;
+  }
   .app-frame {
     background-color: var(--primary-bg-color);
     min-height: calc(100vh - 115px);

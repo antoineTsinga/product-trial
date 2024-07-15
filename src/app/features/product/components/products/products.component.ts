@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { Product } from "./product.model";
-import { ProductService } from "./product.service";
+import { ProductService } from "../product.service";
 import { BehaviorSubject, tap } from "rxjs";
 import { SelectItem } from "primeng/api";
 import { DEFAULT_SEARCH_PARAMS } from "app/shared/ui/list/search.model";
@@ -27,6 +27,7 @@ export class ProductsComponent implements OnInit {
   public selectable: boolean = true;
   public backEndSearch: boolean = false;
   public sortKey: string = "name";
+  public listKey: string = "product-list";
   public sortField: string;
   public sortOrder: string;
   public searchParams = DEFAULT_SEARCH_PARAMS;
@@ -37,8 +38,7 @@ export class ProductsComponent implements OnInit {
 
   constructor(
     private productService: ProductService,
-    private listService: ListService,
-    private readonly sidenavService: SidenavService
+    private listService: ListService
   ) {}
   ngOnInit(): void {
     this.sortOptions = [
@@ -48,27 +48,34 @@ export class ProductsComponent implements OnInit {
       { label: "Price Desc", value: "desc-price" },
     ];
 
-    console.log(this.sidenavService.getPinned());
     this.loadProducts();
   }
 
-  get getExpanded(): boolean {
-    return this.sidenavService.getExpanded();
-  }
-  get getPinned(): boolean {
-    return this.sidenavService.getPinned();
-  }
-
-  loadProducts() {
-    this.productService.getProducts().subscribe((data) => {
-      console.log(data);
-      this.items = data;
-      this.totalRecords = data.length; // Définir le nombre total de produits ici (en supposant 100 produits dans l'exemple JSON)
+  loadProducts(page: number = 1, size: number = 10, sort: string = "name,asc") {
+    this.productService.getProducts({ page, size, sort }).subscribe((data) => {
+      this.items = data.results;
+      this.totalRecords = data.total_results;
     });
   }
 
-  onPageChange(event: PaginationEvent) {}
+  onPageChange(event: PaginationEvent) {
+    const { page, size, sort } = this.getParams();
+    this.loadProducts(page, size, sort);
+  }
 
+  onFilteredChange(event: PaginationEvent) {
+    const { page, size, sort } = this.getParams();
+    this.loadProducts(page, size, sort);
+  }
+
+  getParams() {
+    const searchParams = this.listService.getSearchConfig(this.listKey, "name");
+    const page = searchParams.first / searchParams.rows + 1;
+    const size = searchParams.rows;
+    const sort = searchParams.sortField + "," + searchParams.sortOrder;
+
+    return { page, size, sort };
+  }
   getSeverity(product: Product) {
     switch (product.inventoryStatus) {
       case "INSTOCK":

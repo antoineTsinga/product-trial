@@ -59,4 +59,21 @@
         </p-multiSelect>
       </ng-template>
     </p-columnFilter>
-  </ng-container>
+  <p-columnFilter
+    *ngSwitchCase="ControlType.NUMBER"
+    type="number"
+    matchMode="equals"
+    [field]="col.key"
+    [showClearButton]="true"
+    [showMenu]="false"
+    data-cy="table-filter-number"
+  >
+    <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+      <input
+        type="number"
+        pInputText
+        (keyup)="filter($any($event.target).value)"
+      />
+    </ng-template>
+  </p-columnFilter>
+</ng-container>

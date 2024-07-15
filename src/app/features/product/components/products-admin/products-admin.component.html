@@ -1,1 +1,19 @@
-<p>products-admin works!</p>
+<div class="table-items-container">
+  <app-table
+    [data]="products"
+    [config]="cols"
+    [editableRows]="true"
+    [deletableRows]="true"
+    [selectable]="true"
+    [allowAdd]="true"
+    [allowDelete]="true"
+    [allowEdit]="true"
+    [entity]="getClassEntity()"
+    [lazy]="true"
+    [totalRecords]="totalRecords"
+    (saved)="onSave($event)"
+    (deleted)="onDelete($event)"
+    (lazyLoaded)="onLazyLoad($event)"
+  >
+  </app-table>
+</div>
