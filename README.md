@@ -1,3 +1,50 @@
+# Alten Shop
+
+## Description
+Alten Shop is a web application developed with Angular for managing an online store's products.
+
+
+## Prerequisites
+
+- Node.js
+- npm (Node package manager)
+## Installation
+
+Clone the project
+
+```bash
+  git clone https://github.com/antoineTsinga/product-trial
+```
+
+Go to the project directory
+
+```bash
+  cd product-trial
+```
+
+install the dependencies:
+```bash
+  npm install
+```
+
+### Run Locally
+
+To start the application in development mode, run:
+
+```bash
+  npm start
+```
+or
+```bash
+  ng serve
+```
+## Demo
+
+
+[Alten shop](https://product-trial.vercel.app)
+
+
+
 
 ## Development server
 
