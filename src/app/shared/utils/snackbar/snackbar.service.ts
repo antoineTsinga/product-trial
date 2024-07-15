@@ -1,42 +1,42 @@
-import { TitleCasePipe } from '@angular/common';
-import { Injectable } from '@angular/core';
-import { Message, MessageService } from 'primeng/api';
+import { TitleCasePipe } from "@angular/common";
+import { Injectable } from "@angular/core";
+import { Message, MessageService } from "primeng/api";
 
-@Injectable({ providedIn: 'root' })
+@Injectable({ providedIn: "root" })
 export class SnackbarService {
+  constructor(private readonly messageService: MessageService) {}
 
-  constructor(
-    private readonly messageService: MessageService
-  ) { }
-  
-  public displayError(message = 'An error occured') {
+  public displayError(message = "An error occured") {
     this.show({
-      severity: 'error',
-      detail: message
+      severity: "error",
+      detail: message,
     });
   }
 
-  public displaySuccess() {
+  public displaySuccess(message = "Success") {
     this.show({
-      key: 'topRight',
-      severity: 'success',
-      closable: false
+      key: "topRight",
+      severity: "success",
+      detail: message,
+      closable: false,
     });
   }
 
   public displayInfo(message: string) {
     this.show({
-      detail: message
+      detail: message,
     });
   }
 
   private show(messageConfig: Message): void {
     if (!messageConfig.key) {
       if (!messageConfig.severity) {
-        messageConfig.severity = 'info';
+        messageConfig.severity = "info";
       }
       if (!messageConfig.summary) {
-        messageConfig.summary = TitleCasePipe.prototype.transform(messageConfig.severity);
+        messageConfig.summary = TitleCasePipe.prototype.transform(
+          messageConfig.severity
+        );
       }
     }
     this.messageService.add(messageConfig);

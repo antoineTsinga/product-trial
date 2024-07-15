@@ -4,12 +4,14 @@ import { CrudItemOptions } from "app/shared/utils/crud-item-options/crud-item-op
 import { ControlType } from "app/shared/utils/crud-item-options/control-type.model";
 import { TableLazyLoadEvent } from "app/shared/ui/table/table-lazyload-event.model";
 import { ProductService } from "../../../product.service";
-import { Subscription, switchMap } from "rxjs";
+import { delay, Subscription, switchMap, tap } from "rxjs";
 import { CurrencyPipe } from "@angular/common";
 import { getColumnAdmin } from "./products-admin-columns";
 import { ScreenWidthService } from "app/shared/utils/screen-width/screen-width.service";
 import { ScreenWidth } from "app/shared/utils/crud-item-options/screen-width.model";
 import { TypeInput } from "app/shared/utils/crud-item-options/type.model";
+import { MessageService } from "primeng/api";
+import { SnackbarService } from "app/shared/utils/snackbar/snackbar.service";
 
 @Component({
   selector: "app-products-admin",
@@ -36,7 +38,8 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
   constructor(
     private productService: ProductService,
     private currency: CurrencyPipe,
-    private screenWidthService: ScreenWidthService
+    private screenWidthService: ScreenWidthService,
+    private readonly snackbarService: SnackbarService
   ) {}
 
   ngOnInit(): void {
@@ -65,7 +68,8 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
         this.totalRecords = data.total_results;
         this.loading = false;
       },
-      error: () => {
+      error: (error) => {
+        this.snackbarService.displayError();
         this.loading = false;
       },
     });
@@ -96,24 +100,40 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
     if (!product.id) {
       this.productService
         .createProduct(product)
-        .pipe(switchMap(() => this.reloadItem()))
+        .pipe(
+          tap(() =>
+            this.snackbarService.displaySuccess("Product has been created.")
+          ),
+          switchMap(() => this.reloadItem())
+        )
         .subscribe({
           next: (products) => {
             this.products = products.results;
             this.totalRecords = products.total_results;
           },
-          error: () => {},
+          error: (error) => {
+            console.log(error);
+            this.snackbarService.displayError(error.error);
+          },
         });
     } else {
       this.productService
         .partialUpdateProduct(product.id, product)
-        .pipe(switchMap(() => this.reloadItem()))
+        .pipe(
+          tap(() =>
+            this.snackbarService.displaySuccess("Product has been updated.")
+          ),
+          switchMap(() => this.reloadItem())
+        )
         .subscribe({
           next: (products) => {
             this.products = products.results;
             this.totalRecords = products.total_results;
           },
-          error: () => {},
+          error: (error) => {
+            console.log(error);
+            this.snackbarService.displayError(error.error);
+          },
         });
     }
   }
@@ -121,13 +141,29 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
   onDelete(ids: number[]): void {
     this.productService
       .deleteProducts(ids)
-      .pipe(switchMap(() => this.reloadItem()))
+      .pipe(
+        tap(() => {
+          if (ids.length > 1) {
+            this.snackbarService.displaySuccess(
+              "Products have been succesfuly deleted"
+            );
+          } else {
+            this.snackbarService.displaySuccess(
+              "Product has been succesfuly deleted"
+            );
+          }
+        }),
+        delay(500),
+        switchMap(() => this.reloadItem())
+      )
       .subscribe({
         next: (products) => {
           this.products = products.results;
           this.totalRecords = products.total_results;
         },
-        error: () => {},
+        error: (error) => {
+          this.snackbarService.displayError(error.error);
+        },
       });
   }
 
