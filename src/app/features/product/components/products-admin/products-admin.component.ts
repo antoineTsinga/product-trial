@@ -3,7 +3,7 @@ import { Product } from "../products/product.model";
 import { CrudItemOptions } from "app/shared/utils/crud-item-options/crud-item-options.model";
 import { ControlType } from "app/shared/utils/crud-item-options/control-type.model";
 import { TableLazyLoadEvent } from "app/shared/ui/table/table-lazyload-event.model";
-import { ProductService } from "../product.service";
+import { ProductService } from "../../../product.service";
 import { SelectItem } from "primeng/api";
 import { ListService } from "app/shared/ui/list/list.service";
 import { switchMap } from "rxjs";

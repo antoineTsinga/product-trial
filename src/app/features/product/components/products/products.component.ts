@@ -1,6 +1,6 @@
 import { Component, OnInit } from "@angular/core";
 import { Product } from "./product.model";
-import { ProductService } from "../product.service";
+import { ProductService } from "../../../product.service";
 import { BehaviorSubject, tap } from "rxjs";
 import { SelectItem } from "primeng/api";
 import { DEFAULT_SEARCH_PARAMS } from "app/shared/ui/list/search.model";
@@ -51,21 +51,29 @@ export class ProductsComponent implements OnInit {
     this.loadProducts();
   }
 
-  loadProducts(page: number = 1, size: number = 10, sort: string = "name,asc") {
-    this.productService.getProducts({ page, size, sort }).subscribe((data) => {
-      this.items = data.results;
-      this.totalRecords = data.total_results;
-    });
+  loadProducts(
+    page: number = 1,
+    size: number = 10,
+    sort: string = "name,asc",
+    filter = {}
+  ) {
+    this.productService
+      .getProducts({ page, size, sort, ...filter })
+      .subscribe((data) => {
+        this.items = data.results;
+        this.totalRecords = data.total_results;
+      });
   }
 
   onPageChange(event: PaginationEvent) {
-    const { page, size, sort } = this.getParams();
-    this.loadProducts(page, size, sort);
+    const { page, size, sort, filter } = this.getParams();
+    this.loadProducts(page, size, sort, filter);
   }
 
   onFilteredChange(event: PaginationEvent) {
-    const { page, size, sort } = this.getParams();
-    this.loadProducts(page, size, sort);
+    const { page, size, sort, filter } = this.getParams();
+    console.log(event);
+    this.loadProducts(page, size, sort, filter);
   }
 
   getParams() {
@@ -74,7 +82,10 @@ export class ProductsComponent implements OnInit {
     const size = searchParams.rows;
     const sort = searchParams.sortField + "," + searchParams.sortOrder;
 
-    return { page, size, sort };
+    let filter = {};
+    if (searchParams.search) filter["name_startsWith"] = searchParams.search;
+
+    return { page, size, sort, filter };
   }
   getSeverity(product: Product) {
     switch (product.inventoryStatus) {
