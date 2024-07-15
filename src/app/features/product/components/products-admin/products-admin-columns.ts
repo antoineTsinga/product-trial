@@ -1,6 +1,7 @@
 import { ControlType } from "app/shared/utils/crud-item-options/control-type.model";
 import { CrudItemOptions } from "app/shared/utils/crud-item-options/crud-item-options.model";
 import { ScreenWidth } from "app/shared/utils/crud-item-options/screen-width.model";
+import { TypeInput } from "app/shared/utils/crud-item-options/type.model";
 import { SelectItem } from "primeng/api";
 
 export const categoryOptions: SelectItem[] = [
@@ -78,8 +79,8 @@ export const getColumnAdmin = (screenWidth: ScreenWidth): CrudItemOptions[] => {
     {
       key: "quantity",
       label: "Quantity",
-      controlType: ControlType.NUMBER,
-      type: "number",
+      controlType: ControlType.INPUT,
+      type: TypeInput.NUMBER,
       columnOptions: {
         default: medium.includes(screenWidth),
         sortable: true,
@@ -101,8 +102,8 @@ export const getColumnAdmin = (screenWidth: ScreenWidth): CrudItemOptions[] => {
     {
       key: "rating",
       label: "Rating",
-      controlType: ControlType.NUMBER,
-      type: "number",
+      controlType: ControlType.INPUT,
+      type: TypeInput.NUMBER,
       columnOptions: {
         default: large.includes(screenWidth),
         sortable: true,

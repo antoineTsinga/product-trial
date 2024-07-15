@@ -80,7 +80,6 @@ export class ProductsComponent implements OnInit {
 
   onFilteredChange(event: PaginationEvent) {
     const { page, size, sort, filter } = this.getParams();
-    console.log(event);
     this.loadProducts(page, size, sort, filter);
   }
 
@@ -91,7 +90,7 @@ export class ProductsComponent implements OnInit {
     const sort = searchParams.sortField + "," + searchParams.sortOrder;
 
     let filter = {};
-    if (searchParams.search) filter["name_startsWith"] = searchParams.search;
+    if (searchParams.search) filter["name_contains"] = searchParams.search;
 
     return { page, size, sort, filter };
   }

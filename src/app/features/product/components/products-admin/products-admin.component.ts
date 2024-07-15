@@ -9,6 +9,7 @@ import { CurrencyPipe } from "@angular/common";
 import { getColumnAdmin } from "./products-admin-columns";
 import { ScreenWidthService } from "app/shared/utils/screen-width/screen-width.service";
 import { ScreenWidth } from "app/shared/utils/crud-item-options/screen-width.model";
+import { TypeInput } from "app/shared/utils/crud-item-options/type.model";
 
 @Component({
   selector: "app-products-admin",
@@ -152,8 +153,8 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
       {
         key: "price",
         label: "Price",
-        controlType: ControlType.NUMBER,
-        type: "number",
+        controlType: ControlType.INPUT,
+        type: TypeInput.NUMBER,
         columnOptions: {
           default: [ScreenWidth.large, ScreenWidth.medium].includes(
             this.screenWidth
