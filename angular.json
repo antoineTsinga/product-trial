@@ -39,7 +39,11 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "src/tsconfig.app.json",
-            "assets": ["src/favicon.ico", "src/assets", "src/manifest.webmanifest"],
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              "src/manifest.webmanifest"
+            ],
             "styles": [
               "src/styles.scss",
               {
@@ -54,7 +58,9 @@
               }
             ],
             "stylePreprocessorOptions": {
-              "includePaths": ["src/app/styles"]
+              "includePaths": [
+                "src/app/styles"
+              ]
             },
             "vendorChunk": true,
             "extractLicenses": false,
@@ -106,7 +112,9 @@
                   "maximumWarning": "6kb"
                 }
               ],
-              "localize": ["en"],
+              "localize": [
+                "en"
+              ],
               "outputPath": "dist",
               "i18nMissingTranslation": "error"
             },
@@ -117,7 +125,9 @@
                   "maximumWarning": "6kb"
                 }
               ],
-              "localize": ["fr"],
+              "localize": [
+                "fr"
+              ],
               "outputPath": "dist",
               "i18nMissingTranslation": "error"
             }
@@ -150,8 +160,13 @@
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
-            "tsConfig": ["src/tsconfig.app.json", "src/tsconfig.spec.json"],
-            "exclude": ["**/node_modules/**"]
+            "tsConfig": [
+              "src/tsconfig.app.json",
+              "src/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
           }
         }
       }
