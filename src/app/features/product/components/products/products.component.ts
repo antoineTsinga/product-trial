@@ -1,7 +1,7 @@
 import { Component, OnInit } from "@angular/core";
 import { Product } from "./product.model";
 import { ProductService } from "../../../product.service";
-import { BehaviorSubject, tap } from "rxjs";
+import { BehaviorSubject, delay, tap } from "rxjs";
 import { SelectItem } from "primeng/api";
 import { DEFAULT_SEARCH_PARAMS } from "app/shared/ui/list/search.model";
 import { ListService } from "app/shared/ui/list/list.service";
@@ -32,6 +32,8 @@ export class ProductsComponent implements OnInit {
   public sortOrder: string;
   public searchParams = DEFAULT_SEARCH_PARAMS;
   public dateRangeKey: string = "creationTime";
+  public loading: boolean = false;
+  public mocks: Product[] = Array(6).fill(1);
   rowsPerPageOptions: number[] = [10, 25, 50];
   currentPage: number = 0;
   rows: number = 10;
@@ -59,9 +61,16 @@ export class ProductsComponent implements OnInit {
   ) {
     this.productService
       .getProducts({ page, size, sort, ...filter })
-      .subscribe((data) => {
-        this.items = data.results;
-        this.totalRecords = data.total_results;
+      .pipe(tap(() => (this.loading = true)))
+      .subscribe({
+        next: (data) => {
+          this.items = data.results;
+          this.totalRecords = data.total_results;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 

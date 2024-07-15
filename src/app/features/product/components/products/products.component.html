@@ -1,6 +1,6 @@
 <div class="products-list-container">
   <app-list
-    [items]="items"
+    [items]="loading ? mocks : items"
     [pagination]="true"
     [totalRecords]="totalRecords"
     [listItemTemplate]="listItemTemplate"
@@ -16,7 +16,7 @@
 </div>
 
 <ng-template #listItemTemplate let-product let-i="index">
-  <div class="item-list-container">
+  <div class="item-list-container" *ngIf="!loading">
     <div class="item-list-image">
       <div class="item-list-image-container">
         <img
@@ -64,9 +64,41 @@
       </div>
     </div>
   </div>
+  <div class="item-list-container" *ngIf="loading">
+    <div [style]="{ height: '100%', width: '30%' }">
+      <p-skeleton width="100%" height="100%"></p-skeleton>
+    </div>
+    <div class="item-list-details">
+      <div class="item-list-info-container">
+        <div class="item-list-info" style="width: 100%; height: 20px">
+          <div class="category">
+            <p-skeleton width="100%" height="100%"></p-skeleton>
+          </div>
+          <div class="rating">
+            <p-skeleton width="60%" height="100%"></p-skeleton>
+          </div>
+        </div>
+        <div class="item-list-name">
+          <p-skeleton width="30%" height="20px"></p-skeleton>
+        </div>
+        <div class="item-list-description">
+          <p-skeleton width="100%" height="20px"></p-skeleton>
+        </div>
+      </div>
+      <div class="item-list-action" style="width: 10%; height: 100%">
+        <div style="width: 100%; height: 30%">
+          <p-skeleton width="100%" height="100%"></p-skeleton>
+        </div>
+
+        <div style="width: 100%; height: 30%">
+          <p-skeleton width="100%" height="100%"></p-skeleton>
+        </div>
+      </div>
+    </div>
+  </div>
 </ng-template>
 <ng-template #gridItemTemplate let-product let-i="index">
-  <div class="item-grid-container">
+  <div class="item-grid-container" *ngIf="!loading">
     <div class="item-grid-image">
       <div class="item-grid-image-container">
         <img
@@ -109,6 +141,33 @@
           class="flex-auto md:flex-initial white-space-nowrap"
           [disabled]="product.inventoryStatus === 'OUTOFSTOCK'"
         ></p-button>
+      </div>
+    </div>
+  </div>
+  <div class="item-grid-container" *ngIf="loading">
+    <!-- <div class="item-grid-image"></div> -->
+    <p-skeleton width="100%" height="60%"></p-skeleton>
+    <div class="item-grid-details">
+      <div class="item-grid-info">
+        <div class="category">
+          <p-skeleton width="100%" height="20px"></p-skeleton>
+        </div>
+
+        <div class="rating">
+          <p-skeleton width="100%" height="20px"></p-skeleton>
+        </div>
+      </div>
+      <div class="item-grid-name">
+        <p-skeleton width="50%" height="20px"></p-skeleton>
+      </div>
+      <div class="item-grid-description">
+        <p-skeleton width="100%" height="20px"></p-skeleton>
+      </div>
+      <div class="item-grid-action">
+        <div class="item-grid-price">
+          <p-skeleton width="100%" height="40px"></p-skeleton>
+        </div>
+        <p-skeleton width="50px" height="40px"></p-skeleton>
       </div>
     </div>
   </div>
