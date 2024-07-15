@@ -91,3 +91,14 @@
     }
   }
 }
+
+@media (max-width: 1024px) {
+  .grid-item-container {
+    width: 50%;
+  }
+}
+@media (max-width: 768px) {
+  .grid-item-container {
+    width: 100%;
+  }
+}

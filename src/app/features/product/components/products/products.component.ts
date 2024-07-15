@@ -1,12 +1,11 @@
 import { Component, OnInit } from "@angular/core";
-import { Product } from "./product.model";
+import { Product } from "../../product.model";
 import { ProductService } from "../../../product.service";
-import { BehaviorSubject, delay, tap } from "rxjs";
+import { tap } from "rxjs";
 import { SelectItem } from "primeng/api";
 import { DEFAULT_SEARCH_PARAMS } from "app/shared/ui/list/search.model";
 import { ListService } from "app/shared/ui/list/list.service";
 import { PaginationEvent } from "app/shared/ui/list/list.component";
-import { SidenavService } from "app/base/sidenav/sidenav.service";
 
 @Component({
   selector: "app-products",

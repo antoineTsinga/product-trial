@@ -1,20 +1,21 @@
-import { Component, LOCALE_ID, OnInit } from "@angular/core";
-import { Product } from "../products/product.model";
+import { Component, LOCALE_ID, OnDestroy, OnInit } from "@angular/core";
+import { Product, ProductImpl } from "../../product.model";
 import { CrudItemOptions } from "app/shared/utils/crud-item-options/crud-item-options.model";
 import { ControlType } from "app/shared/utils/crud-item-options/control-type.model";
 import { TableLazyLoadEvent } from "app/shared/ui/table/table-lazyload-event.model";
 import { ProductService } from "../../../product.service";
-import { SelectItem } from "primeng/api";
-import { ListService } from "app/shared/ui/list/list.service";
-import { delay, switchMap, tap } from "rxjs";
+import { Subscription, switchMap, tap } from "rxjs";
 import { CurrencyPipe } from "@angular/common";
+import { getColumnAdmin } from "./products-admin-columns";
+import { ScreenWidthService } from "app/shared/utils/screen-width/screen-width.service";
+import { ScreenWidth } from "app/shared/utils/crud-item-options/screen-width.model";
 
 @Component({
   selector: "app-products-admin",
   templateUrl: "./products-admin.component.html",
   styleUrls: ["./products-admin.component.scss"],
 })
-export class ProductsAdminComponent implements OnInit {
+export class ProductsAdminComponent implements OnInit, OnDestroy {
   public products: Product[] = [];
   public totalRecords: number = 0;
   public loading: boolean = false;
@@ -26,28 +27,28 @@ export class ProductsAdminComponent implements OnInit {
       [key: string]: any;
     };
   } = { page: 0, size: 10, sort: "name,asc", filter: {} };
-  public categoryOptions: SelectItem[] = [
-    { label: "Accessories", value: "Accessories" },
-    { label: "Fitness", value: "Fitness" },
-    { label: "Clothing", value: "Clothing" },
-    { label: "Electronics", value: "Electronics" },
-  ];
-  public inventoryStatusOptions: SelectItem[] = [
-    { label: "In Stock", value: "INSTOCK" },
-    { label: "Low Stock", value: "LOWSTOCK" },
-    { label: "Out of Stock", value: "OUTOFSTOCK" },
-  ];
 
   public cols: CrudItemOptions[] = [];
+  screenWidth: ScreenWidth;
+  private screenWidthSubscription: Subscription;
 
   constructor(
     private productService: ProductService,
-    private currency: CurrencyPipe
+    private currency: CurrencyPipe,
+    private screenWidthService: ScreenWidthService
   ) {}
 
   ngOnInit(): void {
+    this.screenWidthSubscription =
+      this.screenWidthService.screenWidth.subscribe((width) => {
+        this.screenWidth = width;
+        this.inititateColumns();
+      });
     this.loadProducts();
-    this.inititateColumns();
+  }
+
+  ngOnDestroy() {
+    this.screenWidthSubscription.unsubscribe();
   }
 
   loadProducts(
@@ -58,10 +59,7 @@ export class ProductsAdminComponent implements OnInit {
   ) {
     this.productService
       .getProducts({ page, size, sort, ...filter })
-      .pipe(
-        tap(() => (this.loading = true)),
-        delay(3000)
-      )
+      .pipe(tap(() => (this.loading = true)))
       .subscribe({
         next: (data) => {
           this.products = data.results;
@@ -150,81 +148,21 @@ export class ProductsAdminComponent implements OnInit {
 
   inititateColumns() {
     this.cols = [
-      {
-        key: "id",
-        label: "Id",
-        controlType: ControlType.INPUT,
-        type: "text",
-        columnOptions: { default: false, sortable: true, filterable: true },
-        controlOptions: { disableOnCreate: true, hideOnCreate: true },
-      },
-      {
-        key: "code",
-        label: "Code",
-        controlType: ControlType.INPUT,
-        type: "text",
-        columnOptions: { default: true, sortable: true, filterable: true },
-      },
-      {
-        key: "name",
-        label: "Name",
-        controlType: ControlType.INPUT,
-        type: "text",
-        columnOptions: { default: true, sortable: true, filterable: true },
-      },
-      {
-        key: "description",
-        label: "Description",
-        controlType: ControlType.INPUT,
-        type: "text",
-        columnOptions: { default: false, sortable: true, filterable: true },
-      },
+      ...getColumnAdmin(this.screenWidth),
       {
         key: "price",
         label: "Price",
         controlType: ControlType.NUMBER,
         type: "number",
         columnOptions: {
-          default: true,
+          default: [ScreenWidth.large, ScreenWidth.medium].includes(
+            this.screenWidth
+          ),
           sortable: true,
           filterable: true,
           customCellRenderer: (cellValue: number) =>
             this.currency.transform(cellValue),
         },
-      },
-      {
-        key: "category",
-        label: "Category",
-        controlType: ControlType.SELECT,
-        options: this.categoryOptions,
-        type: "text",
-        columnOptions: { default: true, sortable: true, filterable: true },
-      },
-      {
-        key: "quantity",
-        label: "Quantity",
-        controlType: ControlType.NUMBER,
-        type: "number",
-        columnOptions: { default: true, sortable: true, filterable: true },
-      },
-      {
-        key: "inventoryStatus",
-        label: "Inventory Status",
-        controlType: ControlType.SELECT,
-        options: this.inventoryStatusOptions,
-        type: "text",
-        columnOptions: {
-          default: true,
-          sortable: true,
-          filterable: true,
-        },
-      },
-      {
-        key: "rating",
-        label: "Rating",
-        controlType: ControlType.NUMBER,
-        type: "number",
-        columnOptions: { default: true, sortable: true, filterable: true },
       },
     ];
   }
@@ -244,16 +182,4 @@ export class ProductsAdminComponent implements OnInit {
         return null;
     }
   }
-}
-class ProductImpl implements Product {
-  id: number;
-  code: string;
-  name: string;
-  description: string;
-  image: string;
-  price: number;
-  category: string;
-  quantity: number;
-  inventoryStatus: string;
-  rating: number;
 }

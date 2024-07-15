@@ -1,7 +1,7 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { delay, map, Observable } from "rxjs";
-import { Product } from "./product/components/products/product.model";
+import { Product } from "./product/product.model";
 import { ApiService } from "app/shared/services/api.service";
 import { PaginationParams, PagingResponse } from "app/shared/models/type";
 
