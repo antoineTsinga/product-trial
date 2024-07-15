@@ -35,11 +35,14 @@ export class TableComponent<T> implements OnChanges {
   @Input() public readonly lazy: boolean = false;
   @Input() public readonly totalRecords: number;
   @Input() public readonly multiSelect: boolean;
+  @Input() public readonly loading: boolean;
   @Output() saved: EventEmitter<T> = new EventEmitter();
   @Output() deleted: EventEmitter<number[]> = new EventEmitter();
   @Output() lazyLoaded: EventEmitter<TableLazyLoadEvent> = new EventEmitter();
 
   public cols: TableColumn[];
+  public mocks: number[] = Array(10).fill(1);
+
   public selectedEntries = [];
   public columnsConfigDialogDisplayed = false;
   public exportDialogDisplay = false;

@@ -6,7 +6,7 @@ import { TableLazyLoadEvent } from "app/shared/ui/table/table-lazyload-event.mod
 import { ProductService } from "../../../product.service";
 import { SelectItem } from "primeng/api";
 import { ListService } from "app/shared/ui/list/list.service";
-import { switchMap } from "rxjs";
+import { delay, switchMap, tap } from "rxjs";
 import { CurrencyPipe } from "@angular/common";
 
 @Component({
@@ -17,6 +17,7 @@ import { CurrencyPipe } from "@angular/common";
 export class ProductsAdminComponent implements OnInit {
   public products: Product[] = [];
   public totalRecords: number = 0;
+  public loading: boolean = false;
   public searchParams: {
     page: number;
     size: number;
@@ -57,9 +58,19 @@ export class ProductsAdminComponent implements OnInit {
   ) {
     this.productService
       .getProducts({ page, size, sort, ...filter })
-      .subscribe((data) => {
-        this.products = data.results;
-        this.totalRecords = data.total_results;
+      .pipe(
+        tap(() => (this.loading = true)),
+        delay(3000)
+      )
+      .subscribe({
+        next: (data) => {
+          this.products = data.results;
+          this.totalRecords = data.total_results;
+          this.loading = false;
+        },
+        error: () => {
+          this.loading = false;
+        },
       });
   }
 
