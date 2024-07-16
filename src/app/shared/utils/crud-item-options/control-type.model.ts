@@ -7,4 +7,5 @@ export enum ControlType {
   MULTISELECT = "multiselect",
   SELECT = "select",
   TABLE = "table",
+  IMAGE_UPLOAD = "image-upload",
 }

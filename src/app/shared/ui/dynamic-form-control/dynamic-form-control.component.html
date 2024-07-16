@@ -1,50 +1,82 @@
 <ng-container *ngIf="controlVisible">
-<div [ngSwitch]="controlConfig.controlType"
-  class="form-control-container"
-  [class.unavailable]="controlUnavailable">
+  <div
+    [ngSwitch]="controlConfig.controlType"
+    class="form-control-container"
+    [class.unavailable]="controlUnavailable"
+  >
     <ng-container *ngSwitchCase="ControlType.INPUT">
       <span class="p-float-label">
-        <input *ngIf="controlConfig.type === 'text'" type="text" pInputText [formControl]="formCtrl"> 
-        <p-inputNumber *ngIf="controlConfig.type === 'number'" [formControl]="formCtrl"></p-inputNumber>
-        <p-calendar *ngIf="controlConfig.type === 'date'" [formControl]="formCtrl"></p-calendar>
-        <label [class.mandatory-control]="isRequired" [for]="controlConfig.key">{{ controlConfig.label }}</label>
+        <input
+          *ngIf="controlConfig.type === 'text'"
+          type="text"
+          pInputText
+          [formControl]="formCtrl"
+        />
+        <p-inputNumber
+          *ngIf="controlConfig.type === 'number'"
+          [formControl]="formCtrl"
+        ></p-inputNumber>
+        <p-calendar
+          *ngIf="controlConfig.type === 'date'"
+          [formControl]="formCtrl"
+        ></p-calendar>
+        <label
+          [class.mandatory-control]="isRequired"
+          [for]="controlConfig.key"
+          >{{ controlConfig.label }}</label
+        >
       </span>
     </ng-container>
 
     <ng-container *ngSwitchCase="ControlType.DATE">
       <span class="p-float-label">
         <p-calendar [formControl]="formCtrl"></p-calendar>
-        <label [class.mandatory-control]="isRequired" [for]="controlConfig.key">{{ controlConfig.label }}</label>
+        <label
+          [class.mandatory-control]="isRequired"
+          [for]="controlConfig.key"
+          >{{ controlConfig.label }}</label
+        >
       </span>
     </ng-container>
 
     <ng-container *ngSwitchCase="ControlType.SELECT">
-      <label *ngIf="controlConfig.label" [class.mandatory-control]="isRequired"
-        [for]="controlConfig.key" style="width: 75px; display: inline-block;">
+      <label
+        *ngIf="controlConfig.label"
+        [class.mandatory-control]="isRequired"
+        [for]="controlConfig.key"
+        style="width: 75px; display: inline-block"
+      >
         {{ controlConfig.label }}
       </label>
-      <p-dropdown [formControl]="formCtrl"
+      <p-dropdown
+        [formControl]="formCtrl"
         [options]="controlConfig.options"
         optionLabel="label"
-        optionValue="value">
+        optionValue="value"
+      >
       </p-dropdown>
     </ng-container>
 
     <ng-container *ngSwitchCase="ControlType.MULTISELECT">
-      <label *ngIf="controlConfig.label" [class.mandatory-control]="isRequired"
-        [for]="controlConfig.key" style="width: 75px; display: inline-block;">
+      <label
+        *ngIf="controlConfig.label"
+        [class.mandatory-control]="isRequired"
+        [for]="controlConfig.key"
+        style="width: 75px; display: inline-block"
+      >
         {{ controlConfig.label }}
       </label>
       <p-multiSelect
         [options]="controlConfig.options"
         [formControl]="formCtrl"
-        defaultLabel="Select a value">
-    </p-multiSelect>
+        defaultLabel="Select a value"
+      >
+      </p-multiSelect>
     </ng-container>
 
     <ng-container *ngSwitchCase="ControlType.AUTOCOMPLETE">
       <span class="p-float-label">
-        <p-autoComplete 
+        <p-autoComplete
           [formControl]="formCtrl"
           [virtualScroll]="true"
           [suggestions]="autocompleteSuggestions$ | async"
@@ -56,51 +88,97 @@
           [dropdown]="false"
           scrollHeight="200px"
           emptyMessage="No results"
-          [showEmptyMessage]="true">
+          [showEmptyMessage]="true"
+        >
           <ng-template let-suggestion pTemplate="item">
-            <span>{{suggestion.label}} ({{suggestion.value}})</span>
+            <span>{{ suggestion.label }} ({{ suggestion.value }})</span>
           </ng-template>
         </p-autoComplete>
-        <label [for]="controlConfig.key" [class.mandatory-control]="isRequired">{{ controlConfig.label }}</label>
+        <label
+          [for]="controlConfig.key"
+          [class.mandatory-control]="isRequired"
+          >{{ controlConfig.label }}</label
+        >
       </span>
     </ng-container>
 
     <ng-container *ngSwitchCase="ControlType.CHECKBOX">
-      <p-checkbox [formControl]="formCtrl" [label]="controlConfig.label" [binary]="true" class="checkbox-input"></p-checkbox>
+      <p-checkbox
+        [formControl]="formCtrl"
+        [label]="controlConfig.label"
+        [binary]="true"
+        class="checkbox-input"
+      ></p-checkbox>
     </ng-container>
 
     <ng-container *ngSwitchCase="ControlType.LIST">
       <div class="form-control-container">
-        <span class="label" [class.mandatory-control]="isRequired">{{ controlConfig.label}}</span>
+        <span class="label" [class.mandatory-control]="isRequired">{{
+          controlConfig.label
+        }}</span>
         <div class="listbox">
-          <div class="option" *ngFor="let val of controlConfig.value | keyvalue">
+          <div
+            class="option"
+            *ngFor="let val of controlConfig.value | keyvalue"
+          >
             <app-dynamic-form
               [controls]="[getChildControl(controlConfig, val.key)]"
               [values]="controlConfig.value"
-              (formChanged)="updateChildControlValue($event)">
+              (formChanged)="updateChildControlValue($event)"
+            >
             </app-dynamic-form>
           </div>
         </div>
-
       </div>
     </ng-container>
 
-  <ng-container *ngSwitchCase="ControlType.TABLE">
+    <ng-container *ngSwitchCase="ControlType.TABLE">
       <div class="form-control-container">
-        <span class="label" [class.mandatory-control]="isRequired">{{ controlConfig.label }}</span>
+        <span class="label" [class.mandatory-control]="isRequired">{{
+          controlConfig.label
+        }}</span>
         <div class="listbox table-value">
           {{ controlConfig.value.length }}
-          <button pButton
+          <button
+            pButton
             pRipple
             icon="pi pi-pencil"
             class="p-button-sm p-button-rounded p-button-text"
-            (click)="onTableDisplay(controlConfig)">
+            (click)="onTableDisplay(controlConfig)"
+          ></button>
+        </div>
+      </div>
+    </ng-container>
+
+    <ng-container *ngSwitchCase="ControlType.IMAGE_UPLOAD">
+      <div class="form-control-container">
+        <label [for]="controlConfig.key" [class.mandatory-control]="isRequired">
+          {{ controlConfig.label }}
+        </label>
+        <div class="image-upload-container">
+          <input
+            type="file"
+            [id]="controlConfig.key"
+            [accept]="'image/*'"
+            (change)="onFileSelected($event)"
+            style="display: none"
+            #fileInput
+          />
+          <button type="button" (click)="fileInput.click()">
+            {{ formCtrl.value ? "Change Image" : "Select Image" }}
           </button>
         </div>
-      </div>       
-    </ng-container> 
+        <div *ngIf="formCtrl.value" class="image-preview">
+          <img
+            [src]="getSafeUrl(formCtrl.value)"
+            alt="Preview"
+            style="width: 60%"
+          />
+        </div>
+      </div>
+    </ng-container>
   </div>
-  
+
   <small class="p-error" *ngIf="formCtrl.invalid && formCtrl.touched">
     {{ error }}
   </small>

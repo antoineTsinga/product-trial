@@ -4,7 +4,8 @@ import { CrudItemOptions } from "app/shared/utils/crud-item-options/crud-item-op
 import { ControlType } from "app/shared/utils/crud-item-options/control-type.model";
 import { TableLazyLoadEvent } from "app/shared/ui/table/table-lazyload-event.model";
 import { ProductService } from "../../../product.service";
-import { delay, Subscription, switchMap, tap } from "rxjs";
+import { delay, Observable, of, Subscription, switchMap, tap } from "rxjs";
+import { fromFetch } from "rxjs/fetch";
 import { CurrencyPipe } from "@angular/common";
 import { getColumnAdmin } from "./products-admin-columns";
 import { ScreenWidthService } from "app/shared/utils/screen-width/screen-width.service";
@@ -104,6 +105,7 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
           tap(() =>
             this.snackbarService.displaySuccess("Product has been created.")
           ),
+          switchMap((product) => this.uploadBlobImage(product)),
           switchMap(() => this.reloadItem())
         )
         .subscribe({
@@ -122,6 +124,7 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
           tap(() =>
             this.snackbarService.displaySuccess("Product has been updated.")
           ),
+          switchMap((product) => this.uploadBlobImage(product)),
           switchMap(() => this.reloadItem())
         )
         .subscribe({
@@ -204,6 +207,16 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
             this.currency.transform(cellValue),
         },
       },
+      {
+        key: "image",
+        label: "Image",
+        controlType: ControlType.IMAGE_UPLOAD,
+        columnOptions: {
+          default: [ScreenWidth.large].includes(this.screenWidth),
+          sortable: true,
+          filterable: true,
+        },
+      },
     ];
   }
 
@@ -221,5 +234,19 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
       default:
         return null;
     }
+  }
+
+  uploadBlobImage(product: Product): Observable<Product> {
+    if (product.image.includes("blob")) {
+      return fromFetch(product.image, {
+        selector: (response) => response.blob(),
+      }).pipe(
+        switchMap((blob) => {
+          const file = new File([blob], product.id + "");
+          return this.productService.uploadImage(product.id, file);
+        })
+      );
+    }
+    return of(product);
   }
 }

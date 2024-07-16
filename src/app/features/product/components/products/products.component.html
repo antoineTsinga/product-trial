@@ -19,13 +19,7 @@
   <div class="item-list-container" *ngIf="!loading">
     <div class="item-list-image">
       <div class="item-list-image-container">
-        <img
-          [src]="
-            'https://primefaces.org/cdn/primeng/images/demo/product/' +
-            product.image
-          "
-          [alt]="product.name"
-        />
+        <img [src]="product.image" [alt]="product.name" />
         <p-tag
           [value]="product.inventoryStatus"
           [severity]="getSeverity(product)"
@@ -101,13 +95,7 @@
   <div class="item-grid-container" *ngIf="!loading">
     <div class="item-grid-image">
       <div class="item-grid-image-container">
-        <img
-          [src]="
-            'https://primefaces.org/cdn/primeng/images/demo/product/' +
-            product.image
-          "
-          [alt]="product.name"
-        />
+        <img [src]="product.image" [alt]="product.name" />
         <p-tag
           [value]="product.inventoryStatus"
           [severity]="getSeverity(product)"

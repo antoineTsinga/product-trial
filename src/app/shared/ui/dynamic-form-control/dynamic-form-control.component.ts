@@ -1,26 +1,34 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { FormControl, Validators } from '@angular/forms';
-import { CrudItemOptions } from 'app/shared/utils/crud-item-options/crud-item-options.model';
-import { ControlOptions } from 'app/shared/utils/crud-item-options/control-options.model';
-import { FORM_ERROR_MESSAGES } from 'app/shared/utils/validators/form-error-messages';
-import { SelectItem } from 'primeng/api';
-import { debounceTime, Observable, of, Subject } from 'rxjs';
-import { ControlType } from 'app/shared/utils/crud-item-options/control-type.model';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+} from "@angular/core";
+import { FormControl, Validators } from "@angular/forms";
+import { CrudItemOptions } from "app/shared/utils/crud-item-options/crud-item-options.model";
+import { ControlOptions } from "app/shared/utils/crud-item-options/control-options.model";
+import { FORM_ERROR_MESSAGES } from "app/shared/utils/validators/form-error-messages";
+import { SelectItem } from "primeng/api";
+import { debounceTime, Observable, of, Subject } from "rxjs";
+import { ControlType } from "app/shared/utils/crud-item-options/control-type.model";
+import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
 
 @Component({
-  selector: 'app-dynamic-form-control',
-  templateUrl: './dynamic-form-control.component.html',
-  styleUrls: ['./dynamic-form-control.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "app-dynamic-form-control",
+  templateUrl: "./dynamic-form-control.component.html",
+  styleUrls: ["./dynamic-form-control.component.scss"],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DynamicFormControlComponent<T> {
-
   @Input() controlConfig: CrudItemOptions;
   @Input() creation = false;
   @Input() formCtrl: FormControl;
-  @Output() tableControlClicked: EventEmitter<CrudItemOptions> = new EventEmitter();
+  @Output() tableControlClicked: EventEmitter<CrudItemOptions> =
+    new EventEmitter();
   @Output() childControlChanged: EventEmitter<T> = new EventEmitter();
-  @Output() valuePreset: EventEmitter<{ ctrl: string; value: unknown }> = new EventEmitter();
+  @Output() valuePreset: EventEmitter<{ ctrl: string; value: unknown }> =
+    new EventEmitter();
 
   public ControlType = ControlType;
 
@@ -32,13 +40,17 @@ export class DynamicFormControlComponent<T> {
   }
 
   get controlUnavailable(): boolean {
-    return (this.creation && this.controlOptions.disableOnCreate) ||
+    return (
+      (this.creation && this.controlOptions.disableOnCreate) ||
       (!this.creation && this.controlOptions.disableOnUpdate)
+    );
   }
 
   get controlVisible(): boolean {
-    return (this.creation && !this.controlOptions.hideOnCreate) ||
-      (!this.creation && !this.controlOptions.hideOnUpdate);
+    return (
+      (this.creation && !this.controlOptions.hideOnCreate) ||
+      (!this.creation && !this.controlOptions.hideOnUpdate)
+    );
   }
 
   get isRequired(): boolean {
@@ -47,15 +59,13 @@ export class DynamicFormControlComponent<T> {
 
   get error(): string {
     const errorKeys = Object.keys(this.formCtrl.errors);
-    if (!errorKeys.length) return '';
+    if (!errorKeys.length) return "";
     const firstError = errorKeys[0];
-    return FORM_ERROR_MESSAGES[firstError] ?? FORM_ERROR_MESSAGES['*'];
+    return FORM_ERROR_MESSAGES[firstError] ?? FORM_ERROR_MESSAGES["*"];
   }
 
-  constructor() {
-    this.autocompleteValidity$.pipe(
-      debounceTime(200),
-    ).subscribe(() => {
+  constructor(private sanitizer: DomSanitizer) {
+    this.autocompleteValidity$.pipe(debounceTime(200)).subscribe(() => {
       // Set validitity to false while user does not select a suggested value
       this.formCtrl.setErrors({ unknownValue: true });
     });
@@ -65,11 +75,17 @@ export class DynamicFormControlComponent<T> {
     this.tableControlClicked.emit(control);
   }
 
-  public getChildControl(control: CrudItemOptions, childKey: unknown): CrudItemOptions {
-    const childControl = control.children.find(child => child.key === childKey || child.key === 'noKey');
+  public getChildControl(
+    control: CrudItemOptions,
+    childKey: unknown
+  ): CrudItemOptions {
+    const childControl = control.children.find(
+      (child) => child.key === childKey || child.key === "noKey"
+    );
     return {
       ...childControl,
-      key: childControl.key === 'noKey' ? childKey as string : childControl.key,
+      key:
+        childControl.key === "noKey" ? (childKey as string) : childControl.key,
       // options
     };
   }
@@ -90,7 +106,31 @@ export class DynamicFormControlComponent<T> {
     this.formCtrl.setValue(event.label);
     // Set validity to true
     this.formCtrl.updateValueAndValidity();
-    const presetValue: {ctrl: string; value: unknown } = this.controlOptions.onSelect(event);
+    const presetValue: { ctrl: string; value: unknown } =
+      this.controlOptions.onSelect(event);
     this.valuePreset.emit(presetValue);
+  }
+
+  public onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.onImageUploaded({ data: null, file: file });
+    }
+  }
+
+  public onImageUploaded(event: {
+    data: string | ArrayBuffer | null;
+    file: File;
+  }): void {
+    const tempImageUrl = URL.createObjectURL(event.file);
+
+    this.formCtrl.setValue(tempImageUrl);
+    this.formCtrl.markAsDirty();
+    this.formCtrl.markAsTouched();
+  }
+
+  getSafeUrl(url: string): SafeUrl {
+    return this.sanitizer.bypassSecurityTrustUrl(url);
   }
 }

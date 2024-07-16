@@ -15,6 +15,7 @@ import { LazyLoadEvent, SelectItem } from "primeng/api";
 import { Table } from "primeng/table";
 import { TableColumn } from "./table-column.model";
 import { ControlType } from "app/shared/utils/crud-item-options/control-type.model";
+import { DomSanitizer, SafeHtml } from "@angular/platform-browser";
 
 @Component({
   selector: "app-table",
@@ -51,7 +52,7 @@ export class TableComponent<T> implements OnChanges {
   public creation: boolean;
   public ControlType = ControlType;
 
-  constructor() {}
+  constructor(private sanitizer: DomSanitizer) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     const { currentValue: config, previousValue: prevConfig } =
@@ -152,7 +153,7 @@ export class TableComponent<T> implements OnChanges {
     cellValue: unknown,
     control: CrudItemOptions,
     isTooltip: boolean
-  ): string {
+  ): string | SafeHtml {
     if (control.columnOptions.customCellRenderer) {
       return control.columnOptions.customCellRenderer(cellValue);
     }
@@ -172,6 +173,9 @@ export class TableComponent<T> implements OnChanges {
       case ControlType.CHECKBOX: {
         return this.checkboxCellRenderer(cellValue, isTooltip);
       }
+      case ControlType.IMAGE_UPLOAD: {
+        return this.imageCellRenderer(cellValue);
+      }
       default: {
         return `${cellValue}`;
       }
@@ -180,6 +184,14 @@ export class TableComponent<T> implements OnChanges {
 
   private tableCellRenderer(cellValue: unknown): string {
     return this.isCellArray(cellValue) ? cellValue.length.toString() : "";
+  }
+
+  private imageCellRenderer(cellValue: unknown): SafeHtml {
+    if (cellValue) {
+      const html = `<img src="${cellValue}" alt="Product image" class="image" style="width:100px; aspect-ratio:4/3; object-fit:cover;"/>`;
+      return this.sanitizer.bypassSecurityTrustHtml(html);
+    }
+    return this.sanitizer.bypassSecurityTrustHtml("No image");
   }
 
   private selectCellRenderer(

@@ -1,13 +1,13 @@
 .item-grid-container {
-  //   border: 1px solid blue;
+  // border: 1px solid blue;
   width: 100%;
   aspect-ratio: 1;
   padding: 5px;
 }
 
 .item-grid-image {
-  //   border: 1px solid black;
-  height: 60%;
+  width: 100%;
+  aspect-ratio: 4/3;
   background-color: var(--primary-bg-color);
   border-radius: 10px;
   overflow: hidden;
@@ -27,6 +27,7 @@
 
 .item-grid-image-container > img {
   width: 100%;
+  height: 100%;
   border-radius: 5px;
   object-fit: cover;
 }
@@ -66,7 +67,7 @@
 .item-grid-action {
   display: flex;
   justify-content: space-between;
-  align-items: end;
+  align-items: flex-end;
   margin-top: auto;
 }
 
