@@ -133,6 +133,7 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
             this.totalRecords = products.total_results;
           },
           error: (error) => {
+            console.log(error);
             this.snackbarService.displayError(error.error);
           },
         });
