@@ -1,33 +1,47 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { SnackbarService } from 'app/shared/utils/snackbar/snackbar.service';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+} from "@angular/core";
+import { DomSanitizer, SafeUrl } from "@angular/platform-browser";
+import { SnackbarService } from "app/shared/utils/snackbar/snackbar.service";
 
 @Component({
-  selector: 'app-file-upload-input',
-  templateUrl: './file-upload-input.component.html',
-  styleUrls: ['./file-upload-input.component.scss']
+  selector: "app-file-upload-input",
+  templateUrl: "./file-upload-input.component.html",
+  styleUrls: ["./file-upload-input.component.scss"],
 })
 export class FileUploadInputComponent implements OnChanges {
-
   @Input() maxFileSize: number; // Maximum file size allowed in bytes
-  @Input() accept: 'image/*' | string; // string can take a value of a file_extension or a media_type
+  @Input() accept: "image/*" | string; // string can take a value of a file_extension or a media_type
   @Input() displayImage: boolean;
-  @Input() imgSrc: string = '';
-  @Input() inputLabel: string = 'Upload a file';
-  @Output() fileUploaded: EventEmitter<{ data: string | ArrayBuffer; file: File }> = new EventEmitter();
+  @Input() imgSrc: string = "";
+  @Input() inputLabel: string = "Upload a file";
+  @Output() fileUploaded: EventEmitter<{
+    data: string | ArrayBuffer;
+    file: File;
+  }> = new EventEmitter();
   @Output() fileDeleted: EventEmitter<{}> = new EventEmitter();
 
   public isDraggedOver = false;
   public importedFile: File;
   public importedData: string | ArrayBuffer;
-  public filename = '';
+  public filename = "";
 
   constructor(
     private readonly snackbarService: SnackbarService,
-  ) { }
+    private sanitizer: DomSanitizer
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.imgSrc && changes.imgSrc.previousValue !== changes.imgSrc.currentValue) {
-      this.filename = this.imgSrc.substring(this.imgSrc.lastIndexOf('/') + 1);
+    if (
+      changes.imgSrc &&
+      changes.imgSrc.previousValue !== changes.imgSrc.currentValue
+    ) {
+      this.filename = this.imgSrc.substring(this.imgSrc.lastIndexOf("/") + 1);
     }
   }
 
@@ -37,7 +51,7 @@ export class FileUploadInputComponent implements OnChanges {
       this.importedFile = filesList[0];
 
       if (this.maxFileSize && this.importedFile.size > this.maxFileSize) {
-        this.snackbarService.displayError('File too big');
+        this.snackbarService.displayError("File too big");
         this.importedFile = null;
         return;
       }
@@ -45,12 +59,19 @@ export class FileUploadInputComponent implements OnChanges {
       const reader = new FileReader();
       reader.onload = (loadEvent) => {
         this.importedData = loadEvent.target.result;
-        this.fileUploaded.emit({ data: this.importedData, file: this.importedFile });
+        this.fileUploaded.emit({
+          data: this.importedData,
+          file: this.importedFile,
+        });
       };
-      if (this.accept === 'audio/*' || this.accept === 'video/*' || this.accept === 'image/*') {
+      if (
+        this.accept === "audio/*" ||
+        this.accept === "video/*" ||
+        this.accept === "image/*"
+      ) {
         reader.readAsDataURL(this.importedFile);
       } else {
-        reader.readAsText(this.importedFile, 'utf8');
+        reader.readAsText(this.importedFile, "utf8");
       }
     }
   }
@@ -64,12 +85,12 @@ export class FileUploadInputComponent implements OnChanges {
 
   public onDragOver(event: DragEvent): void {
     this.isDraggedOver = true;
-    this.prevent(event);    
+    this.prevent(event);
   }
 
   public onDragLeave(event: DragEvent): void {
     this.isDraggedOver = false;
-    this.prevent(event);    
+    this.prevent(event);
   }
 
   public openImg(): void {
@@ -86,5 +107,9 @@ export class FileUploadInputComponent implements OnChanges {
 
   public prevent(event: DragEvent): void {
     event.preventDefault();
+  }
+
+  getSafeUrl(url: string): SafeUrl {
+    return this.sanitizer.bypassSecurityTrustUrl(url);
   }
 }

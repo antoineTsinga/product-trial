@@ -133,4 +133,8 @@ export class DynamicFormControlComponent<T> {
   getSafeUrl(url: string): SafeUrl {
     return this.sanitizer.bypassSecurityTrustUrl(url);
   }
+
+  onFileDeleted() {
+    this.formCtrl.setValue("");
+  }
 }

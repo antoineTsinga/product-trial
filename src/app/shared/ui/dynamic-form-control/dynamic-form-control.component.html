@@ -164,16 +164,15 @@
             style="display: none"
             #fileInput
           />
-          <button type="button" (click)="fileInput.click()">
-            {{ formCtrl.value ? "Change Image" : "Select Image" }}
-          </button>
-        </div>
-        <div *ngIf="formCtrl.value" class="image-preview">
-          <img
-            [src]="getSafeUrl(formCtrl.value)"
-            alt="Preview"
-            style="width: 60%"
-          />
+          <app-file-upload-input
+            [imgSrc]="formCtrl.value"
+            [displayImage]="true"
+            accept="image/*"
+            [maxFileSize]="2000000"
+            inputLabel="Upload Image"
+            (fileDeleted)="onFileDeleted()"
+            (fileUploaded)="onImageUploaded($event)"
+          ></app-file-upload-input>
         </div>
       </div>
     </ng-container>
