@@ -1,18 +1,37 @@
-import { Component, OnDestroy, OnInit } from "@angular/core";
+import { Component, OnInit, OnDestroy, inject } from "@angular/core";
 import { Product, ProductImpl } from "../../product.model";
 import { CrudItemOptions } from "app/shared/utils/crud-item-options/crud-item-options.model";
 import { ControlType } from "app/shared/utils/crud-item-options/control-type.model";
 import { TableLazyLoadEvent } from "app/shared/ui/table/table-lazyload-event.model";
 import { ProductService } from "../../../product.service";
-import { delay, Observable, of, Subscription, switchMap, tap } from "rxjs";
+import {
+  BehaviorSubject,
+  Observable,
+  Subject,
+  catchError,
+  combineLatest,
+  delay,
+  map,
+  of,
+  switchMap,
+  take,
+  takeUntil,
+  tap,
+} from "rxjs";
 import { fromFetch } from "rxjs/fetch";
 import { CurrencyPipe } from "@angular/common";
 import { getColumnAdmin } from "./products-admin-columns";
 import { ScreenWidthService } from "app/shared/utils/screen-width/screen-width.service";
 import { ScreenWidth } from "app/shared/utils/crud-item-options/screen-width.model";
 import { TypeInput } from "app/shared/utils/crud-item-options/type.model";
-import { MessageService } from "primeng/api";
 import { SnackbarService } from "app/shared/utils/snackbar/snackbar.service";
+
+type PaginationParams = {
+  page: number;
+  size: number;
+  sort: string;
+  [key: string]: string | number;
+};
 
 @Component({
   selector: "app-products-admin",
@@ -20,177 +39,47 @@ import { SnackbarService } from "app/shared/utils/snackbar/snackbar.service";
   styleUrls: ["./products-admin.component.scss"],
 })
 export class ProductsAdminComponent implements OnInit, OnDestroy {
+  private productService = inject(ProductService);
+  private currency = inject(CurrencyPipe);
+  private screenWidthService = inject(ScreenWidthService);
+  private snackbarService = inject(SnackbarService);
+
+  private destroy$ = new Subject<void>();
+  private searchParamsSubject = new BehaviorSubject<PaginationParams>({
+    page: 1,
+    size: 10,
+    sort: "name,asc",
+  });
+
+  cols: CrudItemOptions[] = [];
+
   public products: Product[] = [];
   public totalRecords: number = 0;
   public loading: boolean = false;
-  public searchParams: {
-    page: number;
-    size: number;
-    sort: string;
-    filter: {
-      [key: string]: any;
-    };
-  } = { page: 0, size: 10, sort: "name,asc", filter: {} };
 
-  public cols: CrudItemOptions[] = [];
   screenWidth: ScreenWidth;
-  private screenWidthSubscription: Subscription;
 
-  constructor(
-    private productService: ProductService,
-    private currency: CurrencyPipe,
-    private screenWidthService: ScreenWidthService,
-    private readonly snackbarService: SnackbarService
-  ) {}
+  products$: Observable<Product[]>;
+  totalRecords$: Observable<number>;
 
   ngOnInit(): void {
-    this.screenWidthSubscription =
-      this.screenWidthService.screenWidth.subscribe((width) => {
+    this.initColumns();
+    this.initProductsObservable();
+
+    this.screenWidthService.screenWidth
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((width) => {
         this.screenWidth = width;
-        this.inititateColumns();
+        this.initColumns();
       });
-    this.loadProducts();
   }
 
   ngOnDestroy() {
-    this.screenWidthSubscription.unsubscribe();
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  loadProducts(
-    page: number = 1,
-    size: number = 10,
-    sort: string = "name,asc",
-    filter = {}
-  ) {
-    this.loading = true;
-    this.productService.getProducts({ page, size, sort, ...filter }).subscribe({
-      next: (data) => {
-        this.products = data.results;
-        this.totalRecords = data.total_results;
-        this.loading = false;
-      },
-      error: (error) => {
-        this.snackbarService.displayError();
-        this.loading = false;
-      },
-    });
-  }
-
-  getParams(event: TableLazyLoadEvent) {
-    const searchParams = event;
-    const page = searchParams.first / searchParams.rows + 1;
-    const size = searchParams.rows;
-    const direction = searchParams.sortOrder === 1 ? "asc" : "desc";
-    const sort = searchParams.sortField
-      ? searchParams.sortField + "," + direction
-      : "name,asc";
-
-    let filter: {
-      [key: string]: any;
-    } = {};
-
-    for (const key in searchParams.filters) {
-      const match = searchParams.filters[key].matchMode;
-      const value = searchParams.filters[key].value;
-      if (value) filter[`${key}_${match}`] = value;
-    }
-
-    return { page, size, sort, filter };
-  }
-  onSave(product: ProductImpl): void {
-    if (!product.id) {
-      this.productService
-        .createProduct(product)
-        .pipe(
-          tap(() =>
-            this.snackbarService.displaySuccess("Product has been created.")
-          ),
-          switchMap((product) => this.uploadBlobImage(product)),
-          switchMap(() => this.reloadItem())
-        )
-        .subscribe({
-          next: (products) => {
-            this.products = products.results;
-            this.totalRecords = products.total_results;
-          },
-          error: (error) => {
-            this.snackbarService.displayError(error.error);
-          },
-        });
-    } else {
-      this.productService
-        .partialUpdateProduct(product.id, product)
-        .pipe(
-          tap(() =>
-            this.snackbarService.displaySuccess("Product has been updated.")
-          ),
-          switchMap((product) => this.uploadBlobImage(product)),
-          switchMap(() => this.reloadItem())
-        )
-        .subscribe({
-          next: (products) => {
-            this.products = products.results;
-            this.totalRecords = products.total_results;
-          },
-          error: (error) => {
-            console.log(error);
-            this.snackbarService.displayError(error.error);
-          },
-        });
-    }
-  }
-
-  onDelete(ids: number[]): void {
-    this.productService
-      .deleteProducts(ids)
-      .pipe(
-        tap(() => {
-          if (ids.length > 1) {
-            this.snackbarService.displaySuccess(
-              "Products have been succesfuly deleted"
-            );
-          } else {
-            this.snackbarService.displaySuccess(
-              "Product has been succesfuly deleted"
-            );
-          }
-        }),
-        delay(500),
-        switchMap(() => this.reloadItem())
-      )
-      .subscribe({
-        next: (products) => {
-          this.products = products.results;
-          this.totalRecords = products.total_results;
-        },
-        error: (error) => {
-          this.snackbarService.displayError(error.error);
-        },
-      });
-  }
-
-  onLazyLoad(event: TableLazyLoadEvent): void {
-    const { page, size, sort, filter } = this.getParams(event);
-    this.searchParams = { page, size, sort, filter };
-    this.loadProducts(page, size, sort, filter);
-  }
-
-  getClassEntity() {
-    const t = new ProductImpl();
-    return ProductImpl;
-  }
-
-  reloadItem() {
-    const { page, size, sort, filter } = this.searchParams;
-    return this.productService.getProducts({
-      page,
-      size,
-      sort,
-      ...filter,
-    });
-  }
-
-  inititateColumns() {
+  private initColumns(): void {
     this.cols = [
       ...getColumnAdmin(this.screenWidth),
       {
@@ -222,33 +111,134 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
     ];
   }
 
-  getSeverity(inventoryStatus: string) {
-    switch (inventoryStatus) {
-      case "INSTOCK":
-        return "success";
+  private initProductsObservable(): void {
+    const products$ = this.searchParamsSubject.pipe(
+      tap(() => (this.loading = true)),
+      switchMap((params) => this.productService.getProducts(params)),
+      tap(() => (this.loading = false)),
+      catchError((error) => {
+        this.snackbarService.displayError();
+        this.loading = false;
+        return of({ results: [], total_results: 0 });
+      })
+    );
 
-      case "LOWSTOCK":
-        return "warning";
+    this.products$ = products$.pipe(map((data) => data.results));
+    this.totalRecords$ = products$.pipe(map((data) => data.total_results));
 
-      case "OUTOFSTOCK":
-        return "danger";
-
-      default:
-        return null;
-    }
+    combineLatest([this.products$, this.totalRecords$])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([products, totalRecords]) => {
+        this.products = products;
+        this.totalRecords = totalRecords;
+      });
   }
 
-  uploadBlobImage(product: Product): Observable<Product> {
-    if (product.image.includes("blob")) {
+  onLazyLoad(event: TableLazyLoadEvent): void {
+    const params = this.getParams(event);
+
+    this.searchParamsSubject.next(params);
+  }
+
+  onSave(product: ProductImpl): void {
+    const saveOperation$ = product.id
+      ? this.productService.partialUpdateProduct(product.id, product)
+      : this.productService.createProduct(product);
+
+    saveOperation$
+      .pipe(
+        tap(() =>
+          this.snackbarService.displaySuccess(
+            `Product has been ${product.id ? "updated" : "created"}.`
+          )
+        ),
+        switchMap((savedProduct) => this.uploadBlobImage(savedProduct)),
+        switchMap(() => this.reloadItems()),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        next: () => {},
+        error: (error) => this.snackbarService.displayError(error.error),
+      });
+  }
+
+  onDelete(ids: number[]): void {
+    this.productService
+      .deleteProducts(ids)
+      .pipe(
+        tap(() =>
+          this.snackbarService.displaySuccess(
+            `Product${ids.length > 1 ? "s" : ""} ha${
+              ids.length > 1 ? "ve" : "s"
+            } been successfully deleted`
+          )
+        ),
+        delay(500),
+        switchMap(() => this.reloadItems()),
+        takeUntil(this.destroy$)
+      )
+      .subscribe({
+        error: (error) => this.snackbarService.displayError(error.error),
+      });
+  }
+
+  private getParams(event: TableLazyLoadEvent): PaginationParams {
+    const page = event.first / event.rows + 1;
+    const size = event.rows;
+    const direction = event.sortOrder === 1 ? "asc" : "desc";
+    const sort = event.sortField
+      ? `${event.sortField},${direction}`
+      : "name,asc";
+
+    const params: PaginationParams = { page, size, sort };
+
+    if (event.filters) {
+      Object.entries(event.filters).forEach(([key, value]) => {
+        if (value.value) {
+          params[`${key}_${value.matchMode}`] = value.value;
+        }
+      });
+    }
+
+    return params;
+  }
+
+  private reloadItems(): Observable<void> {
+    return this.searchParamsSubject.pipe(
+      take(1),
+      tap((params) => this.searchParamsSubject.next(params)),
+      map(() => undefined)
+    );
+  }
+
+  private uploadBlobImage(product: Product): Observable<Product> {
+    if (product.image?.includes("blob")) {
       return fromFetch(product.image, {
         selector: (response) => response.blob(),
       }).pipe(
         switchMap((blob) => {
-          const file = new File([blob], product.id + "");
+          const file = new File([blob], `${product.id}`);
           return this.productService.uploadImage(product.id, file);
         })
       );
     }
     return of(product);
+  }
+
+  getSeverity(inventoryStatus: string): string {
+    switch (inventoryStatus) {
+      case "INSTOCK":
+        return "success";
+      case "LOWSTOCK":
+        return "warning";
+      case "OUTOFSTOCK":
+        return "danger";
+      default:
+        return null;
+    }
+  }
+
+  getClassEntity() {
+    return ProductImpl;
   }
 }
