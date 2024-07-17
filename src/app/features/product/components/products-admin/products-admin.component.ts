@@ -216,8 +216,7 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
         controlType: ControlType.IMAGE_UPLOAD,
         columnOptions: {
           default: [ScreenWidth.large].includes(this.screenWidth),
-          sortable: true,
-          filterable: true,
+          sortable: false,
         },
       },
     ];

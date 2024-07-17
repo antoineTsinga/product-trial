@@ -36,7 +36,7 @@
       <ng-container *ngFor="let col of columns">
         <th
           *ngIf="col.isVisible && !col.hidden"
-          [pSortableColumn]="col.key"
+          [pSortableColumn]="col.sortable ? col.key : false"
           [title]="col.label"
           [ngClass]="col.minScreenSize + '-display-only'"
           [class.force-visible]="col.default"
