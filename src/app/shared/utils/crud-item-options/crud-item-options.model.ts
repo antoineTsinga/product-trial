@@ -25,4 +25,12 @@ export interface CrudItemOptions {
   controlOptions?: ControlOptions;
   /** Contains the value of the item */
   value?: any;
+  /** Min value for number type */
+  min?: number;
+  /** Min value for number type */
+  max?: number;
+  /** number type : 'numeric', 'decimal','currency' */
+  numberType?: string;
+  /** Regional settings for formatting */
+  locale?: string;
 }

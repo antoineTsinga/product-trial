@@ -22,4 +22,11 @@ export class ProductImpl implements Product {
   quantity: number;
   inventoryStatus: string;
   rating: number;
+  constructor() {
+    this.price = 1;
+    this.quantity = 1;
+    this.rating = 1;
+    this.inventoryStatus = "INSTOCK";
+    this.category = "Accessories";
+  }
 }

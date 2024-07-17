@@ -81,6 +81,7 @@ export const getColumnAdmin = (screenWidth: ScreenWidth): CrudItemOptions[] => {
       label: "Quantity",
       controlType: ControlType.INPUT,
       type: TypeInput.NUMBER,
+      min: 0,
       columnOptions: {
         default: medium.includes(screenWidth),
         sortable: true,
@@ -104,6 +105,9 @@ export const getColumnAdmin = (screenWidth: ScreenWidth): CrudItemOptions[] => {
       label: "Rating",
       controlType: ControlType.INPUT,
       type: TypeInput.NUMBER,
+      numberType: "decimal",
+      max: 5,
+      min: 0,
       columnOptions: {
         default: large.includes(screenWidth),
         sortable: true,

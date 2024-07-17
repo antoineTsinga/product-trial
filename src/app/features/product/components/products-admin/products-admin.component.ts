@@ -198,6 +198,8 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
         label: "Price",
         controlType: ControlType.INPUT,
         type: TypeInput.NUMBER,
+        numberType: "currency",
+        min: 0,
         columnOptions: {
           default: [ScreenWidth.large, ScreenWidth.medium].includes(
             this.screenWidth

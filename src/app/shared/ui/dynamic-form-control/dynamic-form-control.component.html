@@ -12,9 +12,43 @@
           pInputText
           [formControl]="formCtrl"
         />
+
         <p-inputNumber
-          *ngIf="controlConfig.type === 'number'"
+          *ngIf="
+            controlConfig.type === 'number' &&
+            (controlConfig.numberType === 'numeric' ||
+              !controlConfig.numberType)
+          "
           [formControl]="formCtrl"
+          [min]="controlConfig.min"
+        ></p-inputNumber>
+
+        <p-inputNumber
+          *ngIf="
+            controlConfig.type === 'number' &&
+            controlConfig.numberType === 'decimal'
+          "
+          [allowEmpty]="true"
+          [formControl]="formCtrl"
+          [min]="controlConfig.min"
+          [max]="controlConfig.max"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          mode="decimal"
+        ></p-inputNumber>
+
+        <p-inputNumber
+          *ngIf="
+            controlConfig.type === 'number' &&
+            controlConfig.numberType === 'currency'
+          "
+          [formControl]="formCtrl"
+          [min]="controlConfig.min"
+          [max]="controlConfig.max"
+          [minFractionDigits]="2"
+          [maxFractionDigits]="2"
+          mode="currency"
+          [currency]="controlConfig.controlOptions?.currency || 'USD'"
         ></p-inputNumber>
         <p-calendar
           *ngIf="controlConfig.type === 'date'"
@@ -44,7 +78,7 @@
         *ngIf="controlConfig.label"
         [class.mandatory-control]="isRequired"
         [for]="controlConfig.key"
-        style="width: 75px; display: inline-block"
+        style="display: inline-block"
       >
         {{ controlConfig.label }}
       </label>
@@ -156,14 +190,6 @@
           {{ controlConfig.label }}
         </label>
         <div class="image-upload-container">
-          <input
-            type="file"
-            [id]="controlConfig.key"
-            [accept]="'image/*'"
-            (change)="onFileSelected($event)"
-            style="display: none"
-            #fileInput
-          />
           <app-file-upload-input
             [imgSrc]="formCtrl.value"
             [displayImage]="true"
