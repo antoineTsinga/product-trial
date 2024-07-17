@@ -117,7 +117,7 @@
 <app-edition-dialog
   *ngIf="entryEditionDialogDisplayed"
   [visible]="entryEditionDialogDisplayed"
-  [header]="entity.name + ' Details'"
+  [header]="createDialogTitle ? createDialogTitle : entity.name + ' Details'"
   [controls]="config"
   [editedEntry]="editedEntry"
   [creation]="creation"

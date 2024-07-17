@@ -33,6 +33,7 @@ export class TableComponent<T> implements OnChanges {
   @Input() public readonly allowDelete: boolean;
   @Input() public readonly allowEdit: boolean;
   @Input() public readonly entity; // class of new entry
+  @Input() public readonly createDialogTitle: string;
   @Input() public readonly lazy: boolean = false;
   @Input() public readonly totalRecords: number;
   @Input() public readonly multiSelect: boolean;
