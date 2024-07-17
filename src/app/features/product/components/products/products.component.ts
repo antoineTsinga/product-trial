@@ -1,10 +1,25 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, inject, OnDestroy, OnInit } from "@angular/core";
 import { Product } from "../../product.model";
 import { ProductService } from "../../../product.service";
 import { SelectItem } from "primeng/api";
 import { DEFAULT_SEARCH_PARAMS } from "app/shared/ui/list/search.model";
 import { ListService } from "app/shared/ui/list/list.service";
 import { PaginationEvent } from "app/shared/ui/list/list.component";
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  Subject,
+  switchMap,
+  takeUntil,
+  tap,
+} from "rxjs";
+
+import { SnackbarService } from "app/shared/utils/snackbar/snackbar.service";
+import { PaginationParams } from "app/shared/models/type";
 
 @Component({
   selector: "app-products",
@@ -15,31 +30,32 @@ import { PaginationEvent } from "app/shared/ui/list/list.component";
     "./products.grid-item.scss",
   ],
 })
-export class ProductsComponent implements OnInit {
-  public items: Product[] = []; // Les données des produits
+export class ProductsComponent implements OnInit, OnDestroy {
+  public products: Product[] = [];
   public totalRecords: number = 0;
   public sortOptions: SelectItem[];
   public layout: "grid" | "list" = "grid";
-  public enableAdd: boolean = true;
-  public enableDateRange: boolean = true;
-  public selectable: boolean = true;
-  public backEndSearch: boolean = false;
   public sortKey: string = "name";
   public listKey: string = "product-list";
-  public sortField: string;
-  public sortOrder: string;
-  public searchParams = DEFAULT_SEARCH_PARAMS;
-  public dateRangeKey: string = "creationTime";
   public loading: boolean = false;
   public mocks: Product[] = Array(6).fill(1);
-  rowsPerPageOptions: number[] = [10, 25, 50];
-  currentPage: number = 0;
-  rows: number = 10;
+
+  private snackbarService = inject(SnackbarService);
+  private destroy$ = new Subject<void>();
+  private searchParamsSubject = new BehaviorSubject<PaginationParams>({
+    page: 1,
+    size: 10,
+    sort: "name,asc",
+  });
+
+  products$: Observable<Product[]>;
+  totalRecords$: Observable<number>;
 
   constructor(
     private productService: ProductService,
     private listService: ListService
   ) {}
+
   ngOnInit(): void {
     this.sortOptions = [
       { label: "Name Asc", value: "asc-name" },
@@ -48,48 +64,59 @@ export class ProductsComponent implements OnInit {
       { label: "Price Desc", value: "desc-price" },
     ];
 
-    this.loadProducts();
+    this.initProductsObservable();
   }
 
-  loadProducts(
-    page: number = 1,
-    size: number = 10,
-    sort: string = "name,asc",
-    filter = {}
-  ) {
-    this.loading = true;
-    this.productService.getProducts({ page, size, sort, ...filter }).subscribe({
-      next: (data) => {
-        this.items = data.results;
-        this.totalRecords = data.total_results;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+  private initProductsObservable(): void {
+    const products$ = this.searchParamsSubject.pipe(
+      tap(() => (this.loading = true)),
+      switchMap((params) => this.productService.getProducts(params)),
+      tap(() => (this.loading = false)),
+      catchError((error) => {
+        this.snackbarService.displayError();
         this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      },
-    });
+        return of({ results: [], total_results: 0 });
+      })
+    );
+
+    this.products$ = products$.pipe(map((data) => data.results));
+    this.totalRecords$ = products$.pipe(map((data) => data.total_results));
+
+    combineLatest([this.products$, this.totalRecords$])
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(([products, totalRecords]) => {
+        this.products = products;
+        this.totalRecords = totalRecords;
+      });
   }
 
   onPageChange(event: PaginationEvent) {
-    const { page, size, sort, filter } = this.getParams();
-    this.loadProducts(page, size, sort, filter);
+    const params = this.getParams();
+
+    this.searchParamsSubject.next(params);
   }
 
   onFilteredChange(event: PaginationEvent) {
-    const { page, size, sort, filter } = this.getParams();
-    this.loadProducts(page, size, sort, filter);
+    const params = this.getParams();
+
+    this.searchParamsSubject.next(params);
   }
 
-  getParams() {
+  getParams(): PaginationParams {
     const searchParams = this.listService.getSearchConfig(this.listKey, "name");
     const page = searchParams.first / searchParams.rows + 1;
     const size = searchParams.rows;
     const sort = searchParams.sortField + "," + searchParams.sortOrder;
 
-    let filter = {};
-    if (searchParams.search) filter["name_contains"] = searchParams.search;
+    const params: PaginationParams = { page, size, sort };
 
-    return { page, size, sort, filter };
+    if (searchParams.search) params["name_contains"] = searchParams.search;
+
+    return params;
   }
   getSeverity(product: Product) {
     switch (product.inventoryStatus) {

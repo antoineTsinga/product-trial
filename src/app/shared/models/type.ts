@@ -36,14 +36,9 @@ export interface PagingResponse<T> {
   size: number;
 }
 
-// page=1&sort_by=popularity,desc
-export interface PaginationParams {
+export type PaginationParams = {
   page: number;
-  [param: string]:
-    | string
-    | number
-    | boolean
-    | readonly (string | number | boolean)[];
-  //   total_pages: number;
-  //   total_results: number;
-}
+  size: number;
+  sort: string;
+  [key: string]: string | number;
+};

@@ -1,6 +1,5 @@
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
-import { delay, map, Observable } from "rxjs";
+import { Observable } from "rxjs";
 import { Product } from "./product/product.model";
 import { ApiService } from "app/shared/services/api.service";
 import { PaginationParams, PagingResponse } from "app/shared/models/type";
@@ -9,12 +8,10 @@ import { PaginationParams, PagingResponse } from "app/shared/models/type";
   providedIn: "root",
 })
 export class ProductService {
-  private productsUrl = "assets/products.json";
-
   constructor(private apiService: ApiService) {}
 
   getProducts(
-    params: PaginationParams = { page: 1 }
+    params: PaginationParams = { page: 1, sort: "name,asc", size: 10 }
   ): Observable<PagingResponse<Product>> {
     return this.apiService.get("/products", { params: { ...params } });
   }

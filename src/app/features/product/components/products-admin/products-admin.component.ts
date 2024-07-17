@@ -25,13 +25,7 @@ import { ScreenWidthService } from "app/shared/utils/screen-width/screen-width.s
 import { ScreenWidth } from "app/shared/utils/crud-item-options/screen-width.model";
 import { TypeInput } from "app/shared/utils/crud-item-options/type.model";
 import { SnackbarService } from "app/shared/utils/snackbar/snackbar.service";
-
-type PaginationParams = {
-  page: number;
-  size: number;
-  sort: string;
-  [key: string]: string | number;
-};
+import { PaginationParams } from "app/shared/models/type";
 
 @Component({
   selector: "app-products-admin",
