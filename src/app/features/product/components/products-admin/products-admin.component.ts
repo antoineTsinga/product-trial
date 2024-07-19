@@ -167,7 +167,6 @@ export class ProductsAdminComponent implements OnInit, OnDestroy {
             } been successfully deleted`
           )
         ),
-        delay(500),
         switchMap(() => this.reloadItems()),
         takeUntil(this.destroy$)
       )

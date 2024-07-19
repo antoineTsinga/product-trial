@@ -32,7 +32,10 @@ export const getColumnAdmin = (screenWidth: ScreenWidth): CrudItemOptions[] => {
         sortable: true,
         filterable: true,
       },
-      controlOptions: { disableOnCreate: true, hideOnCreate: true },
+      controlOptions: {
+        hideOnCreate: true,
+        disableOnUpdate: true,
+      },
     },
     {
       key: "code",
